@@ -9,6 +9,7 @@ import ChallengeBoard from './components/ChallengeBoard';
 import Labs from './components/Labs';
 import FreezeModal from './components/FreezeModal';
 import CreateAccountModal from './components/CreateAccountModal';
+import AuthPage from './components/AuthPage';
 import { api } from './services/api';
 
 export default function App() {
@@ -18,7 +19,16 @@ export default function App() {
   const [isOnline, setIsOnline] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const [activeCustomer, setActiveCustomer] = useState(null);
+  // Authentication State
+  const [activeCustomer, setActiveCustomer] = useState(() => {
+    try {
+      const saved = localStorage.getItem('finguard_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
   const [selectedAccount, setSelectedAccount] = useState('');
   
   // Modals
@@ -29,7 +39,7 @@ export default function App() {
   const [transferType, setTransferType] = useState('TRANSFER');
   const [transferAccount, setTransferAccount] = useState('');
 
-  // Fetch full overview from Java BankCore API
+  // Fetch full overview from API
   const refreshData = useCallback(async (isInitial = false) => {
     if (isInitial) setLoading(true);
     try {
@@ -38,16 +48,16 @@ export default function App() {
       setTick(data.tick);
       setIsOnline(true);
 
-      // Auto-select first customer if none selected
-      if (data.customers && data.customers.length > 0) {
-        setActiveCustomer((prev) => {
-          if (!prev) return data.customers[0];
-          const found = data.customers.find((c) => c.id === prev.id);
-          return found || data.customers[0];
-        });
+      // If activeCustomer is set, verify/update it from the latest customers list
+      if (activeCustomer && data.customers && data.customers.length > 0) {
+        const matching = data.customers.find((c) => c.id === activeCustomer.id);
+        if (matching) {
+          setActiveCustomer(matching);
+          localStorage.setItem('finguard_user', JSON.stringify(matching));
+        }
       }
 
-      // Auto-select first account if none selected
+      // Auto-select account if none selected
       if (data.accounts && data.accounts.length > 0) {
         setSelectedAccount((prev) => {
           if (!prev) return data.accounts[0].number;
@@ -56,14 +66,14 @@ export default function App() {
         });
       }
     } catch (err) {
-      console.warn('API sync warning:', err.message);
+      console.warn('Network sync warning:', err.message);
       setIsOnline(false);
     } finally {
       if (isInitial) setLoading(false);
     }
-  }, []);
+  }, [activeCustomer]);
 
-  // Poll Bank Clock and Cooldown updates periodically
+  // Periodic polling for Bank Clock & Queue updates
   useEffect(() => {
     refreshData(true);
     const interval = setInterval(() => {
@@ -71,6 +81,20 @@ export default function App() {
     }, 3000);
     return () => clearInterval(interval);
   }, [refreshData]);
+
+  // Handle Login & Signup Success
+  const handleLoginSuccess = (customer) => {
+    setActiveCustomer(customer);
+    localStorage.setItem('finguard_user', JSON.stringify(customer));
+    setCurrentTab('dashboard');
+    refreshData(false);
+  };
+
+  // Handle Sign Out
+  const handleLogout = () => {
+    setActiveCustomer(null);
+    localStorage.removeItem('finguard_user');
+  };
 
   // Quick navigation handlers
   const handleOpenTransfer = (type = 'TRANSFER', accountNum = '') => {
@@ -84,6 +108,11 @@ export default function App() {
     setCurrentTab('statements');
   };
 
+  // IF NOT AUTHENTICATED -> SHOW LOGIN / SIGN UP PAGE
+  if (!activeCustomer) {
+    return <AuthPage onLoginSuccess={handleLoginSuccess} />;
+  }
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-cyan-500 selection:text-slate-950">
       
@@ -93,27 +122,26 @@ export default function App() {
         setCurrentTab={setCurrentTab}
         tick={tick}
         isOnline={isOnline}
-        customers={overview?.customers || []}
         activeCustomer={activeCustomer}
-        setActiveCustomer={setActiveCustomer}
+        onLogout={handleLogout}
         cooldownCount={overview?.cooldown?.length || 0}
         onRefresh={() => refreshData(true)}
         loading={loading}
       />
 
-      {/* Main Container */}
+      {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         
-        {/* Offline Banner if Java Server isn't running */}
+        {/* Offline Notice */}
         {!isOnline && (
           <div className="mb-6 p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg">
             <div>
-              <span className="font-bold">FinGuard Java Server Disconnected: </span>
-              Ensure the Java backend is active on <code className="font-mono bg-rose-950 px-1 py-0.5 rounded">http://localhost:8080</code>.
+              <span className="font-bold">Backend Server Offline: </span>
+              Ensure the FinGuard Core Server is active on <code className="font-mono bg-rose-950 px-1 py-0.5 rounded">http://localhost:8080</code>.
             </div>
             <button
               onClick={() => refreshData(true)}
-              className="px-3 py-1 rounded-lg bg-rose-500 text-slate-950 font-bold hover:bg-rose-400 transition flex-shrink-0"
+              className="px-3 py-1 rounded-xl bg-rose-500 text-slate-950 font-bold hover:bg-rose-400 transition flex-shrink-0"
             >
               Retry Connection
             </button>
@@ -129,7 +157,6 @@ export default function App() {
             onOpenFreezeModal={(acc) => setFreezeAccount(acc)}
             onOpenCreateAccountModal={() => setShowCreateModal(true)}
             onSelectAccountForStatement={handleSelectAccountForStatement}
-            onNavigateToLabs={() => setCurrentTab('labs')}
           />
         )}
 
@@ -178,23 +205,23 @@ export default function App() {
 
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-900 bg-slate-950/60 py-6 text-xs text-slate-500">
+      {/* Professional Footer */}
+      <footer className="border-t border-slate-900 bg-slate-950/80 py-6 text-xs text-slate-500">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
-          <div>
-            <span className="font-semibold text-slate-300">FinGuard Core</span> • Semester 3 Java Project
+          <div className="font-semibold text-slate-400">
+            FinGuard Banking Technologies • All Rights Reserved
           </div>
           <div className="flex items-center gap-4 text-slate-400">
-            <span>Core Java</span>
+            <span>256-bit Encryption</span>
             <span>•</span>
-            <span>Multithreading & Concurrency</span>
+            <span>Zero-Drift Atomic Clearing</span>
             <span>•</span>
-            <span>React + Tailwind CSS</span>
+            <span>Fraud Shield Active</span>
           </div>
         </div>
       </footer>
 
-      {/* Modals */}
+      {/* Emergency Lock / Freeze Modal */}
       {freezeAccount && (
         <FreezeModal
           account={freezeAccount}
@@ -203,6 +230,7 @@ export default function App() {
         />
       )}
 
+      {/* Open Account Modal */}
       {showCreateModal && (
         <CreateAccountModal
           customers={overview?.customers || []}

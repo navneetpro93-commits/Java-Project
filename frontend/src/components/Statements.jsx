@@ -71,18 +71,18 @@ export default function Statements({
       {/* Header and Controls */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+          <h2 className="text-xl font-extrabold text-white tracking-tight flex items-center gap-2">
             <ReceiptText className="h-5 w-5 text-cyan-400" />
             Audit Ledger & Statements
           </h2>
           <p className="text-xs text-slate-400 mt-1">
-            Immutable transaction records sorted and filtered via Java Core Collections.
+            Complete transaction statements with risk scores and verified status.
           </p>
         </div>
 
         {/* Account Selector */}
         <div className="flex items-center gap-2">
-          <label className="text-xs text-slate-400">Account:</label>
+          <label className="text-xs text-slate-400 font-medium">Select Account:</label>
           <select
             value={currentAcc}
             onChange={(e) => onSelectAccount(e.target.value)}
@@ -99,9 +99,9 @@ export default function Statements({
 
       {/* Account Snapshot Pill */}
       {statementData?.account && (
-        <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 flex flex-wrap items-center justify-between gap-4">
+        <div className="p-5 rounded-2xl bg-slate-900/70 border border-slate-800 flex flex-wrap items-center justify-between gap-4 shadow-lg">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center font-mono font-bold text-cyan-400">
+            <div className="h-10 w-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center font-mono font-bold text-cyan-400">
               {statementData.account.type === 'SAVINGS' ? 'SA' : 'CA'}
             </div>
             <div>
@@ -112,28 +112,28 @@ export default function Statements({
 
           <div className="flex items-center gap-6 font-mono text-xs">
             <div>
-              <div className="text-slate-500 text-[10px]">CURRENT BALANCE</div>
+              <div className="text-slate-500 text-[10px] font-sans">CURRENT BALANCE</div>
               <div className="font-bold text-white text-base">
                 ₹{statementData.account.balance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
               </div>
             </div>
             {statementData.account.type === 'SAVINGS' ? (
               <div>
-                <div className="text-slate-500 text-[10px]">VAULT RESERVE</div>
+                <div className="text-slate-500 text-[10px] font-sans">VAULT RESERVE</div>
                 <div className="font-bold text-cyan-400">
                   ₹{statementData.account.vault.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                 </div>
               </div>
             ) : (
               <div>
-                <div className="text-slate-500 text-[10px]">OVERDRAFT LIMIT</div>
+                <div className="text-slate-500 text-[10px] font-sans">OVERDRAFT LIMIT</div>
                 <div className="font-bold text-indigo-400">
                   ₹{statementData.account.overdraft.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                 </div>
               </div>
             )}
             <div>
-              <div className="text-slate-500 text-[10px]">TOTAL TRANSACTIONS</div>
+              <div className="text-slate-500 text-[10px] font-sans">TRANSACTIONS</div>
               <div className="font-bold text-slate-300">{items.length}</div>
             </div>
           </div>
@@ -141,17 +141,17 @@ export default function Statements({
       )}
 
       {/* Filter and Search Bar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 rounded-xl bg-slate-900/40 border border-slate-800/80">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3.5 rounded-2xl bg-slate-900/50 border border-slate-800">
         
         {/* Search Input */}
         <div className="relative w-full sm:w-72">
           <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400" />
           <input
             type="text"
-            placeholder="Search purpose, counterparty..."
+            placeholder="Search category, payee, note..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-slate-950 border border-slate-700/80 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-cyan-400"
+            className="w-full bg-slate-950 border border-slate-700/80 rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-cyan-400"
           />
         </div>
 
@@ -159,14 +159,14 @@ export default function Statements({
         <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
           
           {/* Status Filter */}
-          <div className="flex items-center rounded-lg bg-slate-950 p-1 border border-slate-800 text-[11px]">
+          <div className="flex items-center rounded-xl bg-slate-950 p-1 border border-slate-800 text-[11px]">
             {['ALL', 'SUCCESS', 'HELD', 'BLOCKED'].map(f => (
               <button
                 key={f}
                 onClick={() => setFilterType(f)}
-                className={`px-2.5 py-1 rounded-md transition ${
+                className={`px-2.5 py-1 rounded-lg transition font-medium ${
                   filterType === f 
-                    ? 'bg-slate-800 text-white font-semibold' 
+                    ? 'bg-slate-800 text-white font-bold' 
                     : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
@@ -176,14 +176,14 @@ export default function Statements({
           </div>
 
           {/* Sort Selector */}
-          <div className="flex items-center gap-1.5 bg-slate-950 px-2 py-1 rounded-lg border border-slate-800 text-xs">
+          <div className="flex items-center gap-1.5 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 text-xs">
             <Filter className="h-3.5 w-3.5 text-cyan-400" />
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value)}
               className="bg-transparent text-slate-200 text-xs focus:outline-none cursor-pointer"
             >
-              <option value="date" className="bg-slate-900">Sort by Date / Tick</option>
+              <option value="date" className="bg-slate-900">Sort by Date</option>
               <option value="amount" className="bg-slate-900">Sort by Amount</option>
               <option value="risk" className="bg-slate-900">Sort by Risk Score</option>
             </select>
@@ -194,37 +194,37 @@ export default function Statements({
 
       {/* Ledger Table */}
       {loading ? (
-        <div className="text-center py-16">
+        <div className="text-center py-20">
           <div className="h-6 w-6 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-          <p className="text-xs text-slate-400">Loading ledger from Java BankCore...</p>
+          <p className="text-xs text-slate-400 font-medium">Fetching verified statement...</p>
         </div>
       ) : error ? (
-        <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
+        <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
           <AlertCircle className="h-4 w-4 text-rose-400 flex-shrink-0" />
           <span>{error}</span>
         </div>
       ) : filteredItems.length === 0 ? (
-        <div className="text-center py-16 px-4 rounded-2xl bg-slate-900/40 border border-slate-800/80">
+        <div className="text-center py-20 px-4 rounded-3xl bg-slate-900/40 border border-slate-800">
           <ReceiptText className="h-10 w-10 text-slate-600 mx-auto mb-2" />
-          <p className="text-sm text-slate-300 font-semibold">No Transactions Found</p>
+          <p className="text-sm text-slate-300 font-bold">No Transactions Found</p>
           <p className="text-xs text-slate-500 mt-0.5">
-            Try moving money or depositing funds in the Transfers tab to generate statements.
+            Deposit or transfer funds from the Transfers tab to generate statements.
           </p>
         </div>
       ) : (
-        <div className="bg-slate-900/70 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+        <div className="bg-slate-900/80 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead className="bg-slate-950/80 border-b border-slate-800 text-slate-400 font-semibold uppercase tracking-wider">
                 <tr>
-                  <th className="py-3 px-4">Tick</th>
-                  <th className="py-3 px-4">Type</th>
-                  <th className="py-3 px-4">Category</th>
-                  <th className="py-3 px-4">Purpose</th>
-                  <th className="py-3 px-4">Counterparty</th>
-                  <th className="py-3 px-4">Amount</th>
-                  <th className="py-3 px-4">Risk</th>
-                  <th className="py-3 px-4 text-right">Status</th>
+                  <th className="py-3.5 px-4">Tick</th>
+                  <th className="py-3.5 px-4">Type</th>
+                  <th className="py-3.5 px-4">Category</th>
+                  <th className="py-3.5 px-4">Description</th>
+                  <th className="py-3.5 px-4">Counterparty</th>
+                  <th className="py-3.5 px-4">Amount</th>
+                  <th className="py-3.5 px-4">Risk</th>
+                  <th className="py-3.5 px-4 text-right">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60 font-mono">
@@ -264,7 +264,7 @@ export default function Statements({
                         </span>
                       </td>
                       <td className="py-3.5 px-4 text-right">
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                           tx.status === 'SUCCESS'
                             ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/20'
                             : tx.status === 'HELD'

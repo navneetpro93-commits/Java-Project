@@ -54,18 +54,18 @@ export default function SpendingIntelligence({
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+          <h2 className="text-xl font-extrabold text-white tracking-tight flex items-center gap-2">
             <PieChart className="h-5 w-5 text-indigo-400" />
-            Spending Intelligence & AI Heuristics
+            Spending Analytics & Financial Persona
           </h2>
           <p className="text-xs text-slate-400 mt-1">
-            Categorized telemetry powered by Java array analytics and budget threshold monitors.
+            Automated expenditure classification and monthly budget monitoring.
           </p>
         </div>
 
         {/* Account Selector */}
         <div className="flex items-center gap-2">
-          <label className="text-xs text-slate-400">Account:</label>
+          <label className="text-xs text-slate-400 font-medium">Select Account:</label>
           <select
             value={currentAcc}
             onChange={(e) => onSelectAccount(e.target.value)}
@@ -81,12 +81,12 @@ export default function SpendingIntelligence({
       </div>
 
       {loading ? (
-        <div className="text-center py-16">
+        <div className="text-center py-20">
           <div className="h-6 w-6 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-          <p className="text-xs text-slate-400">Analyzing expenditure vectors...</p>
+          <p className="text-xs text-slate-400 font-medium">Analyzing expenditure patterns...</p>
         </div>
       ) : error ? (
-        <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs">
+        <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs">
           {error}
         </div>
       ) : (
@@ -95,22 +95,22 @@ export default function SpendingIntelligence({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             
             {/* Personality Card */}
-            <div className="p-5 rounded-2xl bg-gradient-to-br from-indigo-950/40 via-slate-900 to-slate-900 border border-indigo-500/30 shadow-xl">
-              <div className="flex items-center gap-2 text-indigo-400 text-xs font-semibold uppercase tracking-wider mb-2">
+            <div className="p-6 rounded-3xl bg-gradient-to-br from-indigo-950/40 via-slate-900 to-slate-900 border border-indigo-500/30 shadow-xl">
+              <div className="flex items-center gap-2 text-indigo-400 text-xs font-bold uppercase tracking-wider mb-2">
                 <BrainCircuit className="h-4 w-4" />
-                Financial Persona Profile
+                Financial Persona
               </div>
-              <div className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+              <div className="text-xl font-extrabold text-white tracking-tight flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-cyan-400" />
                 {personality}
               </div>
               <p className="text-xs text-slate-400 mt-2">
-                Derived dynamically by <span className="font-mono text-slate-200">SpendingIntelligence.java</span> analyzing debit distribution patterns.
+                Derived from your transaction habits and debit category allocations.
               </p>
             </div>
 
             {/* Total Spend */}
-            <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 shadow-lg">
+            <div className="p-6 rounded-3xl bg-slate-900/70 border border-slate-800 shadow-lg">
               <div className="text-xs text-slate-400 font-medium mb-1">
                 Total Expenditure (Debits)
               </div>
@@ -121,7 +121,7 @@ export default function SpendingIntelligence({
             </div>
 
             {/* Vault Reserve */}
-            <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 shadow-lg">
+            <div className="p-6 rounded-3xl bg-slate-900/70 border border-slate-800 shadow-lg">
               <div className="flex items-center justify-between text-xs text-slate-400 font-medium mb-1">
                 <span>Auto-Saved in Vault</span>
                 <PiggyBank className="h-4 w-4 text-cyan-400" />
@@ -129,19 +129,19 @@ export default function SpendingIntelligence({
               <div className="text-2xl font-bold font-mono text-cyan-400">
                 ₹{vault.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
               </div>
-              <div className="text-[11px] text-slate-500 mt-1">Gained via transaction roundups</div>
+              <div className="text-[11px] text-slate-500 mt-1">Generated via transaction micro-roundups</div>
             </div>
 
           </div>
 
           {/* Category Budgets vs Actual Consumption */}
-          <div className="bg-slate-900/70 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-5">
+          <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-5">
             <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
-              <h3 className="text-sm font-semibold text-slate-200 uppercase tracking-wider">
-                Category Spending vs Monthly Budget Limits
+              <h3 className="text-xs font-bold text-slate-200 uppercase tracking-wider">
+                Monthly Category Budgets vs Spending
               </h3>
               <span className="text-xs text-slate-400 font-mono">
-                {categories.length} Tracked Categories
+                {categories.length} Categories Monitored
               </span>
             </div>
 
@@ -154,11 +154,11 @@ export default function SpendingIntelligence({
                 return (
                   <div 
                     key={cat.name} 
-                    className="p-4 rounded-xl bg-slate-950/60 border border-slate-800/80 hover:border-slate-700 transition"
+                    className="p-4 rounded-2xl bg-slate-950/70 border border-slate-800/80 hover:border-slate-700 transition"
                   >
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold text-xs text-white uppercase tracking-wider">
+                        <span className="font-bold text-xs text-white uppercase tracking-wider">
                           {cat.name}
                         </span>
                         {isOver && (
@@ -195,7 +195,7 @@ export default function SpendingIntelligence({
                     {/* Monetary Numbers */}
                     <div className="flex justify-between items-center text-xs font-mono text-slate-400">
                       <span>Spent: <span className="font-semibold text-white">₹{cat.used.toLocaleString('en-IN')}</span></span>
-                      <span>Budget: <span className="font-semibold text-slate-300">₹{cat.budget.toLocaleString('en-IN')}</span></span>
+                      <span>Limit: <span className="font-semibold text-slate-300">₹{cat.budget.toLocaleString('en-IN')}</span></span>
                     </div>
                   </div>
                 );

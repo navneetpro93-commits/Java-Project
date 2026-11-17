@@ -11,7 +11,8 @@ import {
   Clock, 
   ShieldAlert,
   Terminal,
-  Sparkles
+  Sparkles,
+  ShieldCheck
 } from 'lucide-react';
 import { api } from '../services/api';
 
@@ -36,14 +37,13 @@ export default function Transactions({
     ? accounts.filter(a => a.customerId === activeCustomer.id)
     : accounts;
 
-  // Auto-fill fromAccount if empty and accounts exist
+  // Auto-fill fromAccount if empty
   React.useEffect(() => {
     if (!fromAccount && senderAccounts.length > 0) {
       setFromAccount(senderAccounts[0].number);
     }
   }, [senderAccounts, fromAccount]);
 
-  // Set default purpose when type changes
   const handleTypeChange = (newType) => {
     setType(newType);
     if (newType === 'BILL') setPurpose('Electricity Bill');
@@ -61,7 +61,7 @@ export default function Transactions({
     'Electricity Bill',
     'UPI Snacks',
     'Rent payment',
-    'Doctor Consultation',
+    'Healthcare',
     'Online Shopping'
   ];
 
@@ -88,7 +88,7 @@ export default function Transactions({
       setResult(response);
       if (onSuccess) onSuccess();
     } catch (err) {
-      setError(err.message || 'Transaction failed');
+      setError(err.message || 'Transaction could not be completed');
     } finally {
       setLoading(false);
     }
@@ -103,19 +103,19 @@ export default function Transactions({
       
       {/* Header */}
       <div>
-        <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+        <h2 className="text-xl font-extrabold text-white tracking-tight flex items-center gap-2">
           <ArrowLeftRight className="h-5 w-5 text-cyan-400" />
-          Money Operations & Rule Engine
+          Transfers & Instant Payments
         </h2>
         <p className="text-xs text-slate-400 mt-1">
-          Simulate live transactions evaluated by Java's RuleEngine with concurrent clearing & fraud detection.
+          Instant multi-channel clearing protected by automated fraud risk evaluation.
         </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* Main Form (7 cols) */}
-        <div className="lg:col-span-7 bg-slate-900/70 border border-slate-800 rounded-2xl p-6 shadow-xl">
+        <div className="lg:col-span-7 bg-slate-900/80 border border-slate-800 rounded-3xl p-6 shadow-xl">
           
           {/* Operation Type Selector */}
           <div className="flex flex-wrap gap-2 mb-6">
@@ -133,7 +133,7 @@ export default function Transactions({
                   key={item.id}
                   type="button"
                   onClick={() => handleTypeChange(item.id)}
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition ${
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition ${
                     active
                       ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/20'
                       : 'bg-slate-800/80 text-slate-300 hover:bg-slate-800'
@@ -152,7 +152,7 @@ export default function Transactions({
             {(type === 'TRANSFER' || type === 'WITHDRAW' || type === 'BILL') && (
               <div>
                 <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                  Source Account (Debit)
+                  Debit Account
                 </label>
                 <select
                   value={fromAccount}
@@ -161,14 +161,14 @@ export default function Transactions({
                 >
                   {accounts.map(acc => (
                     <option key={acc.number} value={acc.number}>
-                      {acc.number} - {acc.holder} ({acc.type}) [Bal: ₹{acc.balance.toLocaleString('en-IN')}] {acc.frozen ? '⛔ FROZEN' : ''}
+                      {acc.number} - {acc.holder} ({acc.type}) [Bal: ₹{acc.balance.toLocaleString('en-IN')}] {acc.frozen ? '⛔ LOCKED' : ''}
                     </option>
                   ))}
                 </select>
                 {isFrozen && (
                   <p className="text-[11px] text-rose-400 mt-1 flex items-center gap-1">
                     <ShieldAlert className="h-3.5 w-3.5" />
-                    This account is FROZEN. Java will throw AccountFrozenException.
+                    This account is currently locked. Unfreeze it from the Overview tab to perform transfers.
                   </p>
                 )}
               </div>
@@ -177,7 +177,7 @@ export default function Transactions({
             {(type === 'DEPOSIT' || type === 'SALARY') && (
               <div>
                 <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                  Target Account (Credit)
+                  Credit Account
                 </label>
                 <select
                   value={fromAccount}
@@ -196,14 +196,14 @@ export default function Transactions({
             {type === 'TRANSFER' && (
               <div>
                 <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                  Beneficiary Account (Credit)
+                  Beneficiary Account
                 </label>
                 <select
                   value={toAccount}
                   onChange={(e) => setToAccount(e.target.value)}
                   className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:ring-1 focus:ring-cyan-400 font-mono"
                 >
-                  <option value="">Select counterparty account...</option>
+                  <option value="">Select recipient account...</option>
                   {accounts
                     .filter(a => a.number !== fromAccount)
                     .map(acc => (
@@ -215,13 +215,13 @@ export default function Transactions({
               </div>
             )}
 
-            {/* Amount Input */}
+            {/* Amount */}
             <div>
               <div className="flex justify-between items-center mb-1.5">
                 <label className="text-xs font-medium text-slate-300">Amount (₹)</label>
                 {selectedFromObj && (type === 'TRANSFER' || type === 'WITHDRAW' || type === 'BILL') && (
                   <span className="text-[11px] text-slate-400 font-mono">
-                    Avail: ₹{selectedFromObj.available.toLocaleString('en-IN')}
+                    Available: ₹{selectedFromObj.available.toLocaleString('en-IN')}
                   </span>
                 )}
               </div>
@@ -251,14 +251,14 @@ export default function Transactions({
               </div>
             </div>
 
-            {/* Purpose / Category */}
+            {/* Purpose */}
             <div>
               <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                Transaction Purpose & Category
+                Payment Category & Description
               </label>
               <input
                 type="text"
-                placeholder="e.g. Grocery, Electricity, Snack, Rent..."
+                placeholder="e.g. Grocery, Electricity, Bill, Rent..."
                 value={purpose}
                 onChange={(e) => setPurpose(e.target.value)}
                 className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:ring-1 focus:ring-cyan-400"
@@ -277,13 +277,13 @@ export default function Transactions({
               </div>
             </div>
 
-            {/* Smart Safety Alert Banner */}
+            {/* High-Value Cooldown Notification */}
             {isHighValue && (
-              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-start gap-2.5 text-xs text-amber-300">
+              <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-start gap-2.5 text-xs text-amber-300">
                 <Clock className="h-4 w-4 text-amber-400 flex-shrink-0 mt-0.5" />
                 <div>
-                  <span className="font-bold">High Value Alert: </span>
-                  Amounts ≥ ₹25,000 trigger Java's <span className="font-mono">CooldownVault</span> rule (holding for 4 ticks) to prevent fraudulent spikes.
+                  <span className="font-bold">Fraud Protection Notice: </span>
+                  High-value transfers (≥ ₹25,000) are routed through the Cooldown Vault for customer review before final debit.
                 </div>
               </div>
             )}
@@ -295,7 +295,7 @@ export default function Transactions({
               </div>
             )}
 
-            {/* Submit Button */}
+            {/* Submit */}
             <button
               type="submit"
               disabled={loading || isFrozen}
@@ -304,12 +304,12 @@ export default function Transactions({
               {loading ? (
                 <>
                   <div className="h-4 w-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
-                  Executing via FinGuard Java Core...
+                  Clearing Transaction...
                 </>
               ) : (
                 <>
                   <Send className="h-4 w-4" />
-                  Execute {type}
+                  Authorize {type}
                 </>
               )}
             </button>
@@ -317,12 +317,12 @@ export default function Transactions({
 
         </div>
 
-        {/* Live Feedback & Java Rules Output (5 cols) */}
+        {/* Live Feedback & Audit (5 cols) */}
         <div className="lg:col-span-5 space-y-4">
           
           {/* Result Card */}
           {result ? (
-            <div className={`p-5 rounded-2xl border shadow-xl ${
+            <div className={`p-6 rounded-3xl border shadow-xl ${
               result.message.startsWith('SUCCESS')
                 ? 'bg-emerald-950/20 border-emerald-500/30'
                 : result.message.startsWith('HELD')
@@ -339,42 +339,40 @@ export default function Transactions({
                 )}
                 <span className="font-bold text-sm text-white">
                   {result.message.startsWith('SUCCESS')
-                    ? 'Transaction Settled'
+                    ? 'Transaction Settled Successfully'
                     : result.message.startsWith('HELD')
-                    ? 'Transaction in Cooldown'
-                    : 'Transaction Blocked'}
+                    ? 'Placed in Safety Hold (Cooldown)'
+                    : 'Transaction Blocked by Fraud Shield'}
                 </span>
               </div>
-              <p className="text-xs text-slate-200 font-mono mb-3">{result.message}</p>
+              <p className="text-xs text-slate-200 font-mono mb-2">{result.message}</p>
             </div>
           ) : (
-            <div className="p-5 rounded-2xl bg-slate-900/40 border border-slate-800/80 text-center">
+            <div className="p-6 rounded-3xl bg-slate-900/50 border border-slate-800 text-center">
               <Sparkles className="h-8 w-8 text-slate-600 mx-auto mb-2" />
               <p className="text-xs text-slate-400">
-                Execute a transaction to see Java RuleEngine risk evaluation and thread log output.
+                Authorize a transaction to view instant settlement audit logs and risk evaluation scores.
               </p>
             </div>
           )}
 
-          {/* Real-time System.out Terminal */}
-          <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 shadow-lg">
+          {/* Real-time System Terminal */}
+          <div className="p-5 rounded-3xl bg-slate-950 border border-slate-800 shadow-xl">
             <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-800 text-xs">
               <span className="text-slate-400 font-mono flex items-center gap-1.5">
                 <Terminal className="h-3.5 w-3.5 text-cyan-400" />
-                Java Console Log (System.out)
+                Security Network Audit Log
               </span>
-              <span className="text-[10px] text-slate-500 font-mono">ConsoleCapture.java</span>
+              <span className="text-[10px] text-slate-500 font-mono">Live Telemetry</span>
             </div>
-            <pre className="text-[11px] font-mono text-emerald-400 bg-slate-950/90 p-3 rounded-lg overflow-x-auto max-h-56 scrollbar-thin whitespace-pre-wrap">
-              {result?.log || '// FinGuard RuleEngine & SettlementWorker ready...\n// Awaiting next transaction request...'}
+            <pre className="text-[11px] font-mono text-emerald-400 bg-slate-950/90 p-3 rounded-xl overflow-x-auto max-h-56 scrollbar-thin whitespace-pre-wrap">
+              {result?.log || '// Transaction settlement engine active...\n// Waiting for transaction dispatch...'}
             </pre>
           </div>
 
-          {/* Academic Notes */}
-          <div className="p-3.5 rounded-xl bg-slate-900/30 border border-slate-800 text-[11px] text-slate-400 space-y-1">
-            <div className="font-semibold text-slate-300">Java Concept Highlights:</div>
-            <div>• <span className="font-mono text-indigo-300">RuleEngine.score()</span> evaluates transaction heuristics & assigns fraud score.</div>
-            <div>• Deadlock-free account locking in <span className="font-mono text-indigo-300">lockAndMove()</span> orders locks by account number to prevent circular wait condition!</div>
+          <div className="p-4 rounded-2xl bg-slate-900/40 border border-slate-800 text-xs text-slate-400 flex items-center gap-2">
+            <ShieldCheck className="h-4 w-4 text-cyan-400 flex-shrink-0" />
+            <span>Deadlock-free atomic transaction locking ensures zero funds inconsistency.</span>
           </div>
 
         </div>

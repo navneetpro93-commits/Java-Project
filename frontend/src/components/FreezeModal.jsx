@@ -41,7 +41,7 @@ export default function FreezeModal({ account, onClose, onSuccess }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
-      <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl relative">
+      <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl relative">
         
         {/* Close Button */}
         <button
@@ -62,7 +62,7 @@ export default function FreezeModal({ account, onClose, onSuccess }) {
           </div>
           <div>
             <h3 className="font-bold text-white text-base">
-              {isFrozen ? 'Restore / Unfreeze Account' : 'Emergency Freeze Account'}
+              {isFrozen ? 'Restore / Unlock Account' : 'Emergency Lock Account'}
             </h3>
             <p className="text-xs text-slate-400 font-mono">
               {account.number} ({account.holder})
@@ -78,11 +78,11 @@ export default function FreezeModal({ account, onClose, onSuccess }) {
         }`}>
           {isFrozen ? (
             <p>
-              Unfreezing requires your security PIN and typing <strong>UNFREEZE</strong>. This clears the safety lock and restores outgoing debits.
+              Unlocking requires your security PIN and typing <strong>UNFREEZE</strong>. This restores normal transfer and withdrawal capabilities.
             </p>
           ) : (
             <p>
-              Freezing immediately halts all debit transactions via Java's <code className="font-mono">assertNotFrozen()</code> check. Existing balances remain completely safe.
+              Locking immediately halts all outgoing transactions to prevent unauthorized access. Existing balances remain completely safe.
             </p>
           )}
         </div>
@@ -97,11 +97,11 @@ export default function FreezeModal({ account, onClose, onSuccess }) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-xs font-medium text-slate-300 mb-1">
-              Account PIN (e.g. 1234 for demo)
+              Account PIN
             </label>
             <input
               type="password"
-              placeholder="Enter PIN"
+              placeholder="Enter PIN (e.g. 1234)"
               value={pin}
               onChange={(e) => setPin(e.target.value)}
               className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:ring-1 focus:ring-cyan-400 font-mono"
@@ -140,7 +140,7 @@ export default function FreezeModal({ account, onClose, onSuccess }) {
                   : 'bg-rose-500 hover:bg-rose-400 text-white'
               }`}
             >
-              {loading ? 'Processing...' : (isFrozen ? 'Confirm Unfreeze' : 'Freeze Account')}
+              {loading ? 'Processing...' : (isFrozen ? 'Confirm Unlock' : 'Lock Account')}
             </button>
           </div>
         </form>

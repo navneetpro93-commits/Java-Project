@@ -10,21 +10,20 @@ import {
   GitFork, 
   ShieldCheck, 
   Copy, 
-  BookOpen,
-  Sparkles,
   Zap,
-  Lock
+  Activity,
+  Server
 } from 'lucide-react';
 import { api } from '../services/api';
 
 export default function Labs() {
   const [runningLab, setRunningLab] = useState(null);
-  const [consoleOutput, setConsoleOutput] = useState('// Click any demo below to execute real-time Java multithreading threads...\n// Threads will spawn in Java JVM, run concurrent computations, and stream output here.');
+  const [consoleOutput, setConsoleOutput] = useState('// FinGuard Multi-Threaded Settlement Engine Ready.\n// Click any stress test below to trigger concurrent transactions on the backend engine.');
   const [copied, setCopied] = useState(false);
 
   const runLab = async (labId, labName) => {
     setRunningLab(labId);
-    setConsoleOutput(`// Launching [${labName}] on Java JVM...\n// Spawning worker threads...\n`);
+    setConsoleOutput(`// Initiating [${labName}]...\n// Spawning concurrent worker threads on runtime...\n`);
     try {
       let res;
       if (labId === 'race') {
@@ -34,9 +33,9 @@ export default function Labs() {
       } else if (labId === 'freeze') {
         res = await api.runFreezeLab();
       }
-      setConsoleOutput(res?.log || '// Done without log output.');
+      setConsoleOutput(res?.log || '// Stress test completed successfully.');
     } catch (err) {
-      setConsoleOutput(`// Error executing Java lab:\n${err.message}`);
+      setConsoleOutput(`// Benchmark execution error:\n${err.message}`);
     } finally {
       setRunningLab(null);
     }
@@ -48,53 +47,30 @@ export default function Labs() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const javaConcepts = [
+  const systemArchitectures = [
     {
-      title: 'Object-Oriented Programming (OOP)',
-      lecture: 'Lectures 1 - 10',
-      icon: Layers,
-      color: 'from-blue-500/20 to-cyan-500/20 border-cyan-500/30 text-cyan-300',
-      items: [
-        'Encapsulation: Private member fields, getters/setters, state integrity in Account and Customer.',
-        'Abstract Classes: Account base class defining contract for withdraw(), credit(), and availableLimit().',
-        'Inheritance & Polymorphism: SavingsAccount (vault savings & interest) and CurrentAccount (overdraft protection).',
-        'Interfaces: Freezeable interface decoupling emergency account lockdown from account logic.'
-      ]
+      title: 'Atomic Transaction Isolation',
+      desc: 'Synchronized memory barriers guarantee zero ledger drift under simultaneous multi-thread debits and credits.',
+      icon: ShieldCheck,
+      badge: 'High Integrity'
     },
     {
-      title: 'Exception Handling Hierarchy',
-      lecture: 'Lectures 11 - 18',
-      icon: AlertTriangle,
-      color: 'from-amber-500/20 to-orange-500/20 border-amber-500/30 text-amber-300',
-      items: [
-        'Custom Checked Exceptions: AccountFrozenException, InsufficientBalanceException.',
-        'Custom Unchecked Exceptions: AccountNotFoundException, InvalidPinException.',
-        'Defensive assertion: assertNotFrozen() halts execution before critical debit operations.'
-      ]
-    },
-    {
-      title: 'Java Collections Framework',
-      lecture: 'Lectures 19 - 25',
-      icon: GitFork,
-      color: 'from-emerald-500/20 to-teal-500/20 border-emerald-500/30 text-emerald-300',
-      items: [
-        'HashMap: O(1) indexed lookups for accounts and customer credentials.',
-        'ArrayList: Immutable audit ledger storage and transaction statement filtering.',
-        'PriorityQueue & Comparator: TransactionPriorityComparator sorts by transaction importance (Salary > Bill > UPI).',
-        'HashSet: Set operations for category spend vs budget analysis.'
-      ]
-    },
-    {
-      title: 'Multithreading & Concurrency',
-      lecture: 'Lectures 26 - 31',
+      title: 'Priority Settlement Queue',
+      desc: 'Time-critical transactions (e.g. Payroll/Salary, Emergency Bills) automatically leapfrog standard retail transfers.',
       icon: Zap,
-      color: 'from-indigo-500/20 to-purple-500/20 border-indigo-500/30 text-indigo-300',
-      items: [
-        'Thread & Runnable: Daemon threads for BankClock and CooldownVault watcher.',
-        'Race Conditions & Synchronization: SafeBox vs UnsafeBox race lab demonstrating synchronized blocks.',
-        'Producer-Consumer Pattern: ClearingHouse bounded buffer utilizing wait() and notifyAll().',
-        'Deadlock Prevention: Ordered account locking in lockAndMove() to eliminate circular wait conditions.'
-      ]
+      badge: 'Dynamic Dispatch'
+    },
+    {
+      title: 'Multi-Threaded Worker Pool',
+      desc: 'Independent daemon threads handle bank clock ticks, cooldown monitoring, and asynchronous order settlement.',
+      icon: Cpu,
+      badge: 'Asynchronous'
+    },
+    {
+      title: 'Automated Fraud Lockdown',
+      desc: 'Immediate circuit breaker halts unauthorized debits across competing threads while preserving existing capital.',
+      icon: AlertTriangle,
+      badge: 'Fault Tolerant'
     }
   ];
 
@@ -104,176 +80,170 @@ export default function Labs() {
       {/* Header */}
       <div>
         <div className="flex items-center gap-2">
-          <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+          <h2 className="text-xl font-extrabold text-white tracking-tight flex items-center gap-2">
             <Cpu className="h-5 w-5 text-indigo-400" />
-            Interactive Concurrency Lab & Java Concepts
+            Performance & High-Concurrency Stress Lab
           </h2>
-          <span className="text-xs px-2.5 py-0.5 rounded-full font-mono bg-indigo-500/10 text-indigo-300 border border-indigo-500/30">
-            Semester 3 Project Showcase
+          <span className="text-xs px-2.5 py-0.5 rounded-full font-mono font-bold bg-indigo-500/10 text-indigo-300 border border-indigo-500/30">
+            System Diagnostics
           </span>
         </div>
         <p className="text-xs text-slate-400 mt-1">
-          Trigger live multi-threaded simulations in the backend Java runtime and review the computer science concepts demonstrated.
+          Trigger real-time multi-threaded load tests against the settlement engine to verify thread safety and priority clearing.
         </p>
       </div>
 
       {/* Interactive Labs Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         
-        {/* Lab 1: Race Conditions */}
-        <div className="p-5 rounded-2xl bg-slate-900/70 border border-slate-800 flex flex-col justify-between shadow-xl">
+        {/* Lab 1: Concurrency Race Test */}
+        <div className="p-6 rounded-3xl bg-slate-900/70 border border-slate-800 flex flex-col justify-between shadow-xl">
           <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-300 border border-rose-500/20">
-                Race Condition
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-rose-500/10 text-rose-300 border border-rose-500/20">
+                Data Integrity
               </span>
-              <span className="text-xs font-mono text-slate-500">RaceLab.java</span>
+              <span className="text-xs font-mono text-slate-500">50 Concurrent Threads</span>
             </div>
-            <h3 className="font-bold text-white text-base mb-1">
-              Unsafe vs Synchronized Box
+            <h3 className="font-bold text-white text-base mb-1.5">
+              Unsynchronized vs Atomic Box
             </h3>
-            <p className="text-xs text-slate-400 mb-4">
-              Spawns 50 threads doing 1000 increment/decrements simultaneously. Demonstrates data loss without synchronization vs atomic safety with <code className="text-cyan-300">synchronized</code>.
+            <p className="text-xs text-slate-400 mb-5 leading-relaxed">
+              Dispatches 50 worker threads executing 1,000 parallel debits and credits. Compares data loss in unsynchronized vaults against atomic synchronization.
             </p>
           </div>
 
           <button
-            onClick={() => runLab('race', 'Race Condition Demo')}
+            onClick={() => runLab('race', 'Concurrency Race Condition Test')}
             disabled={runningLab !== null}
-            className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-400 hover:to-amber-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition disabled:opacity-50"
+            className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-400 hover:to-amber-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition disabled:opacity-50"
           >
             {runningLab === 'race' ? (
               <div className="h-4 w-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
             ) : (
               <Play className="h-3.5 w-3.5 fill-slate-950" />
             )}
-            Run Race Demo
+            Run Race Stress Test
           </button>
         </div>
 
         {/* Lab 2: Priority Clearing */}
-        <div className="p-5 rounded-2xl bg-slate-900/70 border border-slate-800 flex flex-col justify-between shadow-xl">
+        <div className="p-6 rounded-3xl bg-slate-900/70 border border-slate-800 flex flex-col justify-between shadow-xl">
           <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/20">
-                Producer-Consumer
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/20">
+                Load Clearing
               </span>
-              <span className="text-xs font-mono text-slate-500">ClearingHouse.java</span>
+              <span className="text-xs font-mono text-slate-500">Priority Buffer</span>
             </div>
-            <h3 className="font-bold text-white text-base mb-1">
-              Priority Queue Clearing
+            <h3 className="font-bold text-white text-base mb-1.5">
+              Priority Settlement Queue
             </h3>
-            <p className="text-xs text-slate-400 mb-4">
-              Dispatches concurrent requests (UPI, BILL, SALARY). Uses a custom <code className="text-cyan-300">Comparator</code> and bounded queue with <code className="text-cyan-300">wait()/notifyAll()</code> to clear high priority first.
+            <p className="text-xs text-slate-400 mb-5 leading-relaxed">
+              Simulates a burst of concurrent transaction requests. Verifies that high-priority payroll and bills leapfrog lower priority retail transfers.
             </p>
           </div>
 
           <button
-            onClick={() => runLab('priority', 'Priority Clearing Demo')}
+            onClick={() => runLab('priority', 'Priority Settlement Stress Test')}
             disabled={runningLab !== null}
-            className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-500 hover:from-cyan-400 hover:to-indigo-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition disabled:opacity-50"
+            className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-500 hover:from-cyan-400 hover:to-indigo-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition disabled:opacity-50"
           >
             {runningLab === 'priority' ? (
               <div className="h-4 w-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
             ) : (
               <Play className="h-3.5 w-3.5 fill-slate-950" />
             )}
-            Run Priority Demo
+            Run Priority Test
           </button>
         </div>
 
-        {/* Lab 3: Freeze vs Worker Threads */}
-        <div className="p-5 rounded-2xl bg-slate-900/70 border border-slate-800 flex flex-col justify-between shadow-xl">
+        {/* Lab 3: Emergency Freeze vs Worker Threads */}
+        <div className="p-6 rounded-3xl bg-slate-900/70 border border-slate-800 flex flex-col justify-between shadow-xl">
           <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
-                Thread Interruption
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
+                Security Interruption
               </span>
-              <span className="text-xs font-mono text-slate-500">CustomerWorker.java</span>
+              <span className="text-xs font-mono text-slate-500">Circuit Breaker</span>
             </div>
-            <h3 className="font-bold text-white text-base mb-1">
-              Freeze vs Worker Threads
+            <h3 className="font-bold text-white text-base mb-1.5">
+              Live Lock Interception
             </h3>
-            <p className="text-xs text-slate-400 mb-4">
-              Launches worker threads withdrawing while main thread invokes emergency freeze. Shows safe pre-emption and custom <code className="text-cyan-300">AccountFrozenException</code>.
+            <p className="text-xs text-slate-400 mb-5 leading-relaxed">
+              Triggers competing worker withdrawal threads while simultaneously applying an emergency security freeze, confirming immediate debit blockage.
             </p>
           </div>
 
           <button
-            onClick={() => runLab('freeze', 'Freeze vs Worker Demo')}
+            onClick={() => runLab('freeze', 'Live Lock Interception Test')}
             disabled={runningLab !== null}
-            className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition disabled:opacity-50"
+            className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition disabled:opacity-50"
           >
             {runningLab === 'freeze' ? (
               <div className="h-4 w-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
             ) : (
               <Play className="h-3.5 w-3.5 fill-slate-950" />
             )}
-            Run Freeze Demo
+            Run Lock Intercept
           </button>
         </div>
 
       </div>
 
-      {/* Real-time Execution Terminal */}
-      <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 shadow-2xl">
+      {/* Real-time Execution Console */}
+      <div className="p-6 rounded-3xl bg-slate-950 border border-slate-800 shadow-2xl">
         <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-800">
-          <div className="flex items-center gap-2 text-xs font-mono text-slate-300">
+          <div className="flex items-center gap-2 text-xs font-mono text-slate-300 font-bold">
             <Terminal className="h-4 w-4 text-cyan-400" />
-            <span>Java Execution Console Stream (JVM System.out)</span>
+            <span>Engine Output Telemetry (Real-Time Terminal Stream)</span>
           </div>
 
           <button
             onClick={copyLog}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-[11px] text-slate-400 hover:text-white transition"
+            className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-slate-900 border border-slate-800 text-[11px] text-slate-400 hover:text-white transition"
           >
             <Copy className="h-3 w-3" />
-            {copied ? 'Copied!' : 'Copy Log'}
+            {copied ? 'Copied' : 'Copy Output'}
           </button>
         </div>
 
-        <pre className="font-mono text-xs text-emerald-400 bg-slate-950/80 p-4 rounded-xl overflow-x-auto min-h-[160px] max-h-[320px] scrollbar-thin whitespace-pre-wrap leading-relaxed">
+        <pre className="font-mono text-xs text-emerald-400 bg-slate-950/80 p-4 rounded-2xl overflow-x-auto min-h-[160px] max-h-[320px] scrollbar-thin whitespace-pre-wrap leading-relaxed">
           {consoleOutput}
         </pre>
       </div>
 
-      {/* Java Syllabus & Academic Topics Breakdown */}
+      {/* Platform Architecture Highlights */}
       <div className="space-y-4">
         <div className="flex items-center gap-2">
-          <BookOpen className="h-5 w-5 text-cyan-400" />
-          <h3 className="text-base font-bold text-white">
-            Semester 3 Java Topics Implementation Map
+          <Server className="h-5 w-5 text-cyan-400" />
+          <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+            Engine Architecture Highlights
           </h3>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {javaConcepts.map((group) => {
-            const Icon = group.icon;
+          {systemArchitectures.map((item) => {
+            const Icon = item.icon;
             return (
               <div 
-                key={group.title}
-                className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 shadow-lg"
+                key={item.title}
+                className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 shadow-md"
               >
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2 font-bold text-white text-sm">
-                    <div className={`p-1.5 rounded-lg bg-gradient-to-br ${group.color} border`}>
+                    <div className="p-2 rounded-xl bg-slate-800 border border-slate-700 text-cyan-400">
                       <Icon className="h-4 w-4" />
                     </div>
-                    {group.title}
+                    {item.title}
                   </div>
-                  <span className="text-[10px] font-mono text-slate-400 px-2 py-0.5 rounded bg-slate-950 border border-slate-800">
-                    {group.lecture}
+                  <span className="text-[10px] font-mono text-slate-400 px-2 py-0.5 rounded-full bg-slate-950 border border-slate-800">
+                    {item.badge}
                   </span>
                 </div>
-
-                <ul className="space-y-2 text-xs text-slate-400">
-                  {group.items.map((item, i) => (
-                    <li key={i} className="flex items-start gap-2">
-                      <span className="text-cyan-400 mt-0.5">•</span>
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
+                <p className="text-xs text-slate-400 leading-relaxed pl-10">
+                  {item.desc}
+                </p>
               </div>
             );
           })}
