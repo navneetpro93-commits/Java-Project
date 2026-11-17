@@ -18,20 +18,21 @@ export default function ChallengeBoard({ overview }) {
       
       {/* Header */}
       <div>
-        <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+        <h2 className="text-xl font-extrabold text-white tracking-tight flex items-center gap-2">
           <Trophy className="h-5 w-5 text-amber-400" />
-          Savings Challenge Leaderboard
+          Savings Goals & Milestones
         </h2>
         <p className="text-xs text-slate-400 mt-1">
-          Gamified 8-week automated micro-savings tracker ranked with Java Comparator & Collections.sort().
+          Automated 8-week micro-savings challenges, weekly streaks, and smart target progress.
         </p>
       </div>
 
       {/* Challenge Cards */}
       {challenges.length === 0 ? (
-        <div className="text-center py-16 px-4 rounded-2xl bg-slate-900/40 border border-slate-800/80">
+        <div className="text-center py-20 px-4 rounded-3xl bg-slate-900/40 border border-slate-800">
           <Trophy className="h-10 w-10 text-slate-600 mx-auto mb-2" />
-          <p className="text-sm text-slate-300 font-semibold">No Challenges Enrolled Yet</p>
+          <p className="text-sm text-slate-300 font-bold">No Active Savings Goals</p>
+          <p className="text-xs text-slate-500 mt-1">Open a Savings Account to enroll in automated 8-week goal challenges.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4">
@@ -42,15 +43,15 @@ export default function ChallengeBoard({ overview }) {
             return (
               <div
                 key={ch.account}
-                className={`p-5 rounded-2xl border transition-all ${
+                className={`p-6 rounded-3xl border transition-all ${
                   isFirst
                     ? 'bg-gradient-to-r from-amber-950/20 via-slate-900 to-slate-900 border-amber-500/40 shadow-xl'
-                    : 'bg-slate-900/60 border-slate-800 shadow-md'
+                    : 'bg-slate-900/70 border-slate-800 shadow-md'
                 }`}
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className={`h-11 w-11 rounded-xl flex items-center justify-center font-bold text-sm ${
+                  <div className="flex items-center gap-3.5">
+                    <div className={`h-12 w-12 rounded-2xl flex items-center justify-center font-bold text-sm ${
                       isFirst 
                         ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' 
                         : 'bg-slate-800 text-slate-300 border border-slate-700'
@@ -59,13 +60,13 @@ export default function ChallengeBoard({ overview }) {
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="font-bold text-white text-base">{ch.title}</h3>
-                        <span className="text-xs font-mono px-2 py-0.5 rounded-md bg-slate-800 text-slate-300">
-                          Account: {ch.account}
+                        <h3 className="font-extrabold text-white text-base">{ch.title}</h3>
+                        <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">
+                          {ch.account}
                         </span>
                       </div>
                       <div className="flex items-center gap-4 text-xs text-slate-400 mt-1">
-                        <span className="flex items-center gap-1 text-amber-400 font-semibold">
+                        <span className="flex items-center gap-1 text-amber-400 font-bold">
                           <Flame className="h-3.5 w-3.5 fill-amber-400" />
                           {ch.streak} Week Streak
                         </span>
@@ -78,7 +79,7 @@ export default function ChallengeBoard({ overview }) {
                   </div>
 
                   <div className="text-right">
-                    <div className="text-xs text-slate-400">Total Completion</div>
+                    <div className="text-xs text-slate-400 font-medium">Goal Progress</div>
                     <div className="text-2xl font-black font-mono text-cyan-400">
                       {Math.round(ch.progress)}%
                     </div>
@@ -95,8 +96,8 @@ export default function ChallengeBoard({ overview }) {
 
                 {/* 8-Week Breakdown Grid */}
                 <div>
-                  <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
-                    8-Week Contribution Tracker
+                  <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2.5">
+                    Weekly Deposit History
                   </div>
                   <div className="grid grid-cols-4 sm:grid-cols-8 gap-2 font-mono text-xs">
                     {weeks.map((amt, wIdx) => {
@@ -104,18 +105,18 @@ export default function ChallengeBoard({ overview }) {
                       return (
                         <div
                           key={wIdx}
-                          className={`p-2.5 rounded-xl border text-center transition ${
+                          className={`p-3 rounded-2xl border text-center transition ${
                             completed
-                              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+                              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300 font-bold'
                               : amt > 0
-                              ? 'bg-amber-500/10 border-amber-500/30 text-amber-300'
-                              : 'bg-slate-950/60 border-slate-800/80 text-slate-500'
+                              ? 'bg-amber-500/10 border-amber-500/30 text-amber-300 font-bold'
+                              : 'bg-slate-950/70 border-slate-800/80 text-slate-500'
                           }`}
                         >
                           <div className="text-[10px] uppercase font-sans text-slate-400 mb-0.5">
                             W{wIdx + 1}
                           </div>
-                          <div className="font-bold">
+                          <div>
                             ₹{amt}
                           </div>
                         </div>
@@ -129,13 +130,6 @@ export default function ChallengeBoard({ overview }) {
           })}
         </div>
       )}
-
-      {/* Java Architecture Note */}
-      <div className="p-4 rounded-xl bg-slate-900/40 border border-slate-800 text-xs text-slate-400 space-y-1">
-        <span className="font-semibold text-slate-300">Java Concept Highlights:</span>
-        <p>• Uses arrays for week buckets: <span className="font-mono text-slate-200">double[] weeks = new double[8]</span>.</p>
-        <p>• Ranks accounts dynamically using a custom <span className="font-mono text-slate-200">Comparator&lt;SavingsChallenge&gt;</span> prioritizing highest streaks and progress percent.</p>
-      </div>
 
     </div>
   );

@@ -44,7 +44,7 @@ export default function CreateAccountModal({
   const handleCreateAccount = async (e) => {
     e.preventDefault();
     if (!targetCustId) {
-      setError('Please select a customer.');
+      setError('Please select a customer profile.');
       return;
     }
     if (!openingBalance || Number(openingBalance) < 0) {
@@ -66,7 +66,7 @@ export default function CreateAccountModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
-      <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl relative">
+      <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl relative">
         
         {/* Close */}
         <button
@@ -77,10 +77,10 @@ export default function CreateAccountModal({
         </button>
 
         {/* Tab switch */}
-        <div className="flex border-b border-slate-800 pb-3 mb-4 gap-2">
+        <div className="flex border-b border-slate-800 pb-3 mb-5 gap-2">
           <button
             onClick={() => { setTab('account'); setError(null); }}
-            className={`flex items-center gap-2 pb-2 text-xs font-semibold border-b-2 transition ${
+            className={`flex items-center gap-2 pb-2 text-xs font-bold border-b-2 transition ${
               tab === 'account'
                 ? 'border-cyan-400 text-cyan-300'
                 : 'border-transparent text-slate-400 hover:text-slate-200'
@@ -91,7 +91,7 @@ export default function CreateAccountModal({
           </button>
           <button
             onClick={() => { setTab('customer'); setError(null); }}
-            className={`flex items-center gap-2 pb-2 text-xs font-semibold border-b-2 transition ${
+            className={`flex items-center gap-2 pb-2 text-xs font-bold border-b-2 transition ${
               tab === 'customer'
                 ? 'border-cyan-400 text-cyan-300'
                 : 'border-transparent text-slate-400 hover:text-slate-200'
@@ -103,7 +103,7 @@ export default function CreateAccountModal({
         </div>
 
         {error && (
-          <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs mb-4 flex items-center gap-2">
+          <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs mb-4 flex items-center gap-2">
             <AlertCircle className="h-4 w-4 text-rose-400 flex-shrink-0" />
             <span>{error}</span>
           </div>
@@ -113,7 +113,7 @@ export default function CreateAccountModal({
           <form onSubmit={handleCreateAccount} className="space-y-4">
             <div>
               <label className="block text-xs font-medium text-slate-300 mb-1">
-                Select Customer
+                Account Owner
               </label>
               <select
                 value={targetCustId}
@@ -130,7 +130,7 @@ export default function CreateAccountModal({
 
             <div>
               <label className="block text-xs font-medium text-slate-300 mb-1">
-                Account Type (Java Polymorphism)
+                Account Type
               </label>
               <div className="grid grid-cols-2 gap-2">
                 <button
@@ -143,7 +143,7 @@ export default function CreateAccountModal({
                   }`}
                 >
                   <div className="font-bold">SAVINGS</div>
-                  <div className="text-[10px] text-slate-400 mt-0.5">Vault & interest yields</div>
+                  <div className="text-[10px] text-slate-400 mt-0.5">Vault savings & 4.5% yield</div>
                 </button>
                 <button
                   type="button"
@@ -155,7 +155,7 @@ export default function CreateAccountModal({
                   }`}
                 >
                   <div className="font-bold">CURRENT</div>
-                  <div className="text-[10px] text-slate-400 mt-0.5">₹5,000 Overdraft limit</div>
+                  <div className="text-[10px] text-slate-400 mt-0.5">₹5,000 Overdraft facility</div>
                 </button>
               </div>
             </div>
@@ -177,9 +177,9 @@ export default function CreateAccountModal({
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-2.5 px-4 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs uppercase tracking-wider transition shadow-lg shadow-cyan-500/20 disabled:opacity-50"
+                className="w-full py-3 px-4 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs uppercase tracking-wider transition shadow-lg shadow-cyan-500/20 disabled:opacity-50"
               >
-                {loading ? 'Creating in Java...' : 'Create Account'}
+                {loading ? 'Creating Account...' : 'Open Account'}
               </button>
             </div>
           </form>
@@ -194,7 +194,7 @@ export default function CreateAccountModal({
                 placeholder="e.g. Priya Sharma"
                 value={custName}
                 onChange={(e) => setCustName(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:ring-1 focus:ring-cyan-400"
+                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:ring-1 focus:ring-cyan-400 font-medium"
               />
             </div>
 
@@ -208,7 +208,7 @@ export default function CreateAccountModal({
                 maxLength={6}
                 value={custPin}
                 onChange={(e) => setCustPin(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono focus:outline-none focus:ring-1 focus:ring-cyan-400"
+                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono focus:outline-none focus:ring-1 focus:ring-cyan-400 tracking-widest"
               />
             </div>
 
@@ -216,9 +216,9 @@ export default function CreateAccountModal({
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-2.5 px-4 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white font-bold text-xs uppercase tracking-wider transition shadow-lg shadow-indigo-500/20 disabled:opacity-50"
+                className="w-full py-3 px-4 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white font-bold text-xs uppercase tracking-wider transition shadow-lg shadow-indigo-500/20 disabled:opacity-50"
               >
-                {loading ? 'Registering...' : 'Register Customer'}
+                {loading ? 'Registering...' : 'Register Profile'}
               </button>
             </div>
           </form>
