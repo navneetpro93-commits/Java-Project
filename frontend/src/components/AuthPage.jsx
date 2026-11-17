@@ -4,10 +4,7 @@ import {
   Lock, 
   User, 
   ArrowRight, 
-  Sparkles, 
-  CheckCircle2, 
   AlertCircle, 
-  CreditCard, 
   KeyRound,
   Sun,
   Moon,
@@ -37,30 +34,6 @@ export default function AuthPage({ onLoginSuccess }) {
 
   const { isDark, toggleTheme } = useTheme();
   const { language, setLanguage, t, supportedLanguages, currentLanguageObj } = useLanguage();
-
-  // Quick Demo Logins
-  const demoAccounts = [
-    { id: 'C101', name: 'Navneet', pin: '1234', role: 'Premier Account', accounts: 'FG1001, FG1002' },
-    { id: 'C102', name: 'Aarav', pin: '2345', role: 'Savings Account', accounts: 'FG1003' },
-    { id: 'C103', name: 'Meera', pin: '3456', role: 'Smart Investor', accounts: 'FG1004' },
-  ];
-
-  const handleQuickLogin = async (demo) => {
-    setLoginId(demo.id);
-    setLoginPin(demo.pin);
-    setError(null);
-    setLoading(true);
-    try {
-      const res = await api.login(demo.id, demo.pin);
-      if (res && res.customer) {
-        onLoginSuccess(res.customer);
-      }
-    } catch (err) {
-      setError(err.message || 'Demo login failed');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
@@ -236,7 +209,7 @@ export default function AuthPage({ onLoginSuccess }) {
                   <User className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
                   <input
                     type="text"
-                    placeholder="e.g. C101"
+                    placeholder="Enter Customer ID"
                     value={loginId}
                     onChange={(e) => setLoginId(e.target.value.toUpperCase())}
                     className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-slate-900 dark:text-white uppercase placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-cyan-500 font-mono font-medium"
@@ -290,7 +263,7 @@ export default function AuthPage({ onLoginSuccess }) {
                   <User className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
                   <input
                     type="text"
-                    placeholder="e.g. Aryan Malhotra"
+                    placeholder="Enter Full Name"
                     value={signupName}
                     onChange={(e) => setSignupName(e.target.value)}
                     className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-cyan-500 font-medium"
@@ -380,46 +353,6 @@ export default function AuthPage({ onLoginSuccess }) {
               </button>
             </form>
           )}
-
-          {/* QUICK DEMO LOGIN PRESETS */}
-          <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-800">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                {t('instantDemoAccess')}
-              </span>
-              <span className="text-[10px] text-slate-400 dark:text-slate-500 font-mono">1-Click</span>
-            </div>
-
-            <div className="space-y-2">
-              {demoAccounts.map((demo) => (
-                <button
-                  key={demo.id}
-                  type="button"
-                  onClick={() => handleQuickLogin(demo)}
-                  disabled={loading}
-                  className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/80 hover:bg-slate-100 dark:hover:bg-slate-800/80 border border-slate-200 dark:border-slate-800/80 transition flex items-center justify-between group text-left"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <div className="h-8 w-8 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center font-bold text-xs text-cyan-600 dark:text-cyan-400 font-mono">
-                      {demo.name[0]}
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-slate-800 dark:text-white group-hover:text-cyan-600 dark:group-hover:text-cyan-300 transition">
-                        {demo.name}
-                      </div>
-                      <div className="text-[10px] text-slate-400">
-                        {demo.role} • <span className="font-mono text-slate-500">{demo.id}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <span className="text-[10px] px-2 py-1 rounded bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 font-mono group-hover:border-cyan-500/30 group-hover:text-cyan-600 dark:group-hover:text-cyan-300 transition">
-                    PIN: {demo.pin} →
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
 
         </div>
 

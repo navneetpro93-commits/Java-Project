@@ -101,7 +101,7 @@ export default function FreezeModal({ account, onClose, onSuccess }) {
             </label>
             <input
               type="password"
-              placeholder="Enter PIN (e.g. 1234)"
+              placeholder="Enter PIN"
               value={pin}
               onChange={(e) => setPin(e.target.value)}
               className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-cyan-500 font-mono"
