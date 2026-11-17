@@ -23,15 +23,8 @@ function MainApp() {
 
   const { t } = useLanguage();
 
-  // Authentication State
-  const [activeCustomer, setActiveCustomer] = useState(() => {
-    try {
-      const saved = localStorage.getItem('finguard_user');
-      return saved ? JSON.parse(saved) : null;
-    } catch {
-      return null;
-    }
-  });
+  // Authentication State: Always start as null so Login & Sign Up page comes first!
+  const [activeCustomer, setActiveCustomer] = useState(null);
 
   const [selectedAccount, setSelectedAccount] = useState('');
   
@@ -43,6 +36,11 @@ function MainApp() {
   const [transferType, setTransferType] = useState('TRANSFER');
   const [transferAccount, setTransferAccount] = useState('');
 
+  // Clear any residual browser session on initial mount so Login & Sign Up always displays first
+  useEffect(() => {
+    localStorage.removeItem('finguard_user');
+  }, []);
+
   // Fetch full overview from API
   const refreshData = useCallback(async (isInitial = false) => {
     if (isInitial) setLoading(true);
@@ -52,12 +50,11 @@ function MainApp() {
       setTick(data.tick);
       setIsOnline(true);
 
-      // If activeCustomer is set, verify/update it from the latest customers list
+      // If activeCustomer is authenticated, keep it synchronized
       if (activeCustomer && data.customers && data.customers.length > 0) {
         const matching = data.customers.find((c) => c.id === activeCustomer.id);
         if (matching) {
           setActiveCustomer(matching);
-          localStorage.setItem('finguard_user', JSON.stringify(matching));
         }
       }
 
@@ -89,7 +86,6 @@ function MainApp() {
   // Handle Login & Signup Success
   const handleLoginSuccess = (customer) => {
     setActiveCustomer(customer);
-    localStorage.setItem('finguard_user', JSON.stringify(customer));
     setCurrentTab('dashboard');
     refreshData(false);
   };
@@ -112,7 +108,7 @@ function MainApp() {
     setCurrentTab('statements');
   };
 
-  // IF NOT AUTHENTICATED -> SHOW LOGIN / SIGN UP PAGE
+  // ALWAYS DISPLAY LOGIN & SIGN UP PAGE FIRST BEFORE ACCESSING THE SITE
   if (!activeCustomer) {
     return <AuthPage onLoginSuccess={handleLoginSuccess} />;
   }
