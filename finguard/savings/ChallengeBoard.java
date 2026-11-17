@@ -25,12 +25,17 @@ public class ChallengeBoard {
         return null;
     }
 
-    public void printLeaderboard() {
+    public ArrayList<SavingsChallenge> ranked() {
         ArrayList<SavingsChallenge> copy = new ArrayList<SavingsChallenge>();
         for (int i = 0; i < challenges.size(); i++) {
             copy.add(challenges.get(i));
         }
         Collections.sort(copy);
+        return copy;
+    }
+
+    public void printLeaderboard() {
+        ArrayList<SavingsChallenge> copy = ranked();
         System.out.println("----- Savings challenge leaderboard -----");
         for (int i = 0; i < copy.size(); i++) {
             System.out.println("  " + (i + 1) + ". " + copy.get(i).report());
