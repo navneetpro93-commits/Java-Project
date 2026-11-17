@@ -10,13 +10,15 @@ import {
   GitFork, 
   ShieldCheck, 
   Copy, 
-  Zap,
-  Activity,
-  Server
+  Zap, 
+  Activity, 
+  Server 
 } from 'lucide-react';
 import { api } from '../services/api';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function Labs() {
+  const { t } = useLanguage();
   const [runningLab, setRunningLab] = useState(null);
   const [consoleOutput, setConsoleOutput] = useState('// FinGuard Multi-Threaded Settlement Engine Ready.\n// Click any stress test below to trigger concurrent transactions on the backend engine.');
   const [copied, setCopied] = useState(false);
@@ -80,16 +82,16 @@ export default function Labs() {
       {/* Header */}
       <div>
         <div className="flex items-center gap-2">
-          <h2 className="text-xl font-extrabold text-white tracking-tight flex items-center gap-2">
-            <Cpu className="h-5 w-5 text-indigo-400" />
-            Performance & High-Concurrency Stress Lab
+          <h2 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+            <Cpu className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+            {t('stressLabTitle')}
           </h2>
-          <span className="text-xs px-2.5 py-0.5 rounded-full font-mono font-bold bg-indigo-500/10 text-indigo-300 border border-indigo-500/30">
+          <span className="text-xs px-2.5 py-0.5 rounded-full font-mono font-bold bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/30">
             System Diagnostics
           </span>
         </div>
-        <p className="text-xs text-slate-400 mt-1">
-          Trigger real-time multi-threaded load tests against the settlement engine to verify thread safety and priority clearing.
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+          {t('stressLabSubtitle')}
         </p>
       </div>
 
@@ -97,18 +99,18 @@ export default function Labs() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         
         {/* Lab 1: Concurrency Race Test */}
-        <div className="p-6 rounded-3xl bg-slate-900/70 border border-slate-800 flex flex-col justify-between shadow-xl">
+        <div className="p-6 rounded-3xl bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800 flex flex-col justify-between shadow-xl transition-colors">
           <div>
             <div className="flex items-center justify-between mb-3">
-              <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-rose-500/10 text-rose-300 border border-rose-500/20">
+              <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-rose-50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-500/20">
                 Data Integrity
               </span>
-              <span className="text-xs font-mono text-slate-500">50 Concurrent Threads</span>
+              <span className="text-xs font-mono text-slate-400">50 Worker Threads</span>
             </div>
-            <h3 className="font-bold text-white text-base mb-1.5">
+            <h3 className="font-bold text-slate-900 dark:text-white text-base mb-1.5">
               Unsynchronized vs Atomic Box
             </h3>
-            <p className="text-xs text-slate-400 mb-5 leading-relaxed">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mb-5 leading-relaxed">
               Dispatches 50 worker threads executing 1,000 parallel debits and credits. Compares data loss in unsynchronized vaults against atomic synchronization.
             </p>
           </div>
@@ -123,23 +125,23 @@ export default function Labs() {
             ) : (
               <Play className="h-3.5 w-3.5 fill-slate-950" />
             )}
-            Run Race Stress Test
+            {t('runRaceTest')}
           </button>
         </div>
 
         {/* Lab 2: Priority Clearing */}
-        <div className="p-6 rounded-3xl bg-slate-900/70 border border-slate-800 flex flex-col justify-between shadow-xl">
+        <div className="p-6 rounded-3xl bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800 flex flex-col justify-between shadow-xl transition-colors">
           <div>
             <div className="flex items-center justify-between mb-3">
-              <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/20">
+              <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-cyan-50 dark:bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-500/20">
                 Load Clearing
               </span>
-              <span className="text-xs font-mono text-slate-500">Priority Buffer</span>
+              <span className="text-xs font-mono text-slate-400">Priority Buffer</span>
             </div>
-            <h3 className="font-bold text-white text-base mb-1.5">
+            <h3 className="font-bold text-slate-900 dark:text-white text-base mb-1.5">
               Priority Settlement Queue
             </h3>
-            <p className="text-xs text-slate-400 mb-5 leading-relaxed">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mb-5 leading-relaxed">
               Simulates a burst of concurrent transaction requests. Verifies that high-priority payroll and bills leapfrog lower priority retail transfers.
             </p>
           </div>
@@ -154,23 +156,23 @@ export default function Labs() {
             ) : (
               <Play className="h-3.5 w-3.5 fill-slate-950" />
             )}
-            Run Priority Test
+            {t('runPriorityTest')}
           </button>
         </div>
 
         {/* Lab 3: Emergency Freeze vs Worker Threads */}
-        <div className="p-6 rounded-3xl bg-slate-900/70 border border-slate-800 flex flex-col justify-between shadow-xl">
+        <div className="p-6 rounded-3xl bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800 flex flex-col justify-between shadow-xl transition-colors">
           <div>
             <div className="flex items-center justify-between mb-3">
-              <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
-                Security Interruption
+              <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/20">
+                Security Circuit
               </span>
-              <span className="text-xs font-mono text-slate-500">Circuit Breaker</span>
+              <span className="text-xs font-mono text-slate-400">Lock Interceptor</span>
             </div>
-            <h3 className="font-bold text-white text-base mb-1.5">
+            <h3 className="font-bold text-slate-900 dark:text-white text-base mb-1.5">
               Live Lock Interception
             </h3>
-            <p className="text-xs text-slate-400 mb-5 leading-relaxed">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mb-5 leading-relaxed">
               Triggers competing worker withdrawal threads while simultaneously applying an emergency security freeze, confirming immediate debit blockage.
             </p>
           </div>
@@ -185,7 +187,7 @@ export default function Labs() {
             ) : (
               <Play className="h-3.5 w-3.5 fill-slate-950" />
             )}
-            Run Lock Intercept
+            {t('runLockIntercept')}
           </button>
         </div>
 
@@ -216,8 +218,8 @@ export default function Labs() {
       {/* Platform Architecture Highlights */}
       <div className="space-y-4">
         <div className="flex items-center gap-2">
-          <Server className="h-5 w-5 text-cyan-400" />
-          <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+          <Server className="h-5 w-5 text-cyan-500" />
+          <h3 className="text-sm font-bold text-slate-800 dark:text-white uppercase tracking-wider">
             Engine Architecture Highlights
           </h3>
         </div>
@@ -228,20 +230,20 @@ export default function Labs() {
             return (
               <div 
                 key={item.title}
-                className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 shadow-md"
+                className="p-5 rounded-2xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 shadow-md transition-colors"
               >
                 <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2 font-bold text-white text-sm">
-                    <div className="p-2 rounded-xl bg-slate-800 border border-slate-700 text-cyan-400">
+                  <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white text-sm">
+                    <div className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-cyan-600 dark:text-cyan-400">
                       <Icon className="h-4 w-4" />
                     </div>
                     {item.title}
                   </div>
-                  <span className="text-[10px] font-mono text-slate-400 px-2 py-0.5 rounded-full bg-slate-950 border border-slate-800">
+                  <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
                     {item.badge}
                   </span>
                 </div>
-                <p className="text-xs text-slate-400 leading-relaxed pl-10">
+                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed pl-10">
                   {item.desc}
                 </p>
               </div>
