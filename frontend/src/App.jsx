@@ -10,14 +10,18 @@ import Labs from './components/Labs';
 import FreezeModal from './components/FreezeModal';
 import CreateAccountModal from './components/CreateAccountModal';
 import AuthPage from './components/AuthPage';
+import { ThemeProvider } from './context/ThemeContext';
+import { LanguageProvider, useLanguage } from './context/LanguageContext';
 import { api } from './services/api';
 
-export default function App() {
+function MainApp() {
   const [currentTab, setCurrentTab] = useState('dashboard');
   const [overview, setOverview] = useState(null);
   const [tick, setTick] = useState(null);
   const [isOnline, setIsOnline] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const { t } = useLanguage();
 
   // Authentication State
   const [activeCustomer, setActiveCustomer] = useState(() => {
@@ -114,7 +118,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-cyan-500 selection:text-slate-950">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 flex flex-col font-sans selection:bg-cyan-500 selection:text-slate-950 transition-colors duration-200">
       
       {/* Top Navigation */}
       <Navbar
@@ -134,14 +138,14 @@ export default function App() {
         
         {/* Offline Notice */}
         {!isOnline && (
-          <div className="mb-6 p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg">
+          <div className="mb-6 p-4 rounded-2xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/30 text-rose-700 dark:text-rose-300 text-xs flex flex-col sm:flex-row items-center justify-between gap-3 shadow-md">
             <div>
-              <span className="font-bold">Backend Server Offline: </span>
-              Ensure the FinGuard Core Server is active on <code className="font-mono bg-rose-950 px-1 py-0.5 rounded">http://localhost:8080</code>.
+              <span className="font-bold">FinGuard Core Engine Offline: </span>
+              Ensure the server is running on <code className="font-mono bg-rose-100 dark:bg-rose-950 px-1 py-0.5 rounded">http://localhost:8080</code>.
             </div>
             <button
               onClick={() => refreshData(true)}
-              className="px-3 py-1 rounded-xl bg-rose-500 text-slate-950 font-bold hover:bg-rose-400 transition flex-shrink-0"
+              className="px-3 py-1.5 rounded-xl bg-rose-600 dark:bg-rose-500 text-white dark:text-slate-950 font-bold hover:bg-rose-500 transition flex-shrink-0"
             >
               Retry Connection
             </button>
@@ -206,17 +210,17 @@ export default function App() {
       </main>
 
       {/* Professional Footer */}
-      <footer className="border-t border-slate-900 bg-slate-950/80 py-6 text-xs text-slate-500">
+      <footer className="border-t border-slate-200 dark:border-slate-900 bg-white dark:bg-slate-950/80 py-6 text-xs text-slate-500 transition-colors">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
-          <div className="font-semibold text-slate-400">
+          <div className="font-semibold text-slate-600 dark:text-slate-400">
             FinGuard Banking Technologies • All Rights Reserved
           </div>
           <div className="flex items-center gap-4 text-slate-400">
-            <span>256-bit Encryption</span>
+            <span>256-bit AES Encryption</span>
             <span>•</span>
-            <span>Zero-Drift Atomic Clearing</span>
+            <span>Zero-Drift Clearing</span>
             <span>•</span>
-            <span>Fraud Shield Active</span>
+            <span>Multi-Language Active</span>
           </div>
         </div>
       </footer>
@@ -241,5 +245,15 @@ export default function App() {
       )}
 
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <ThemeProvider>
+      <LanguageProvider>
+        <MainApp />
+      </LanguageProvider>
+    </ThemeProvider>
   );
 }

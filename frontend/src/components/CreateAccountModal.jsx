@@ -65,25 +65,25 @@ export default function CreateAccountModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
-      <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fade-in">
+      <div className="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-2xl relative transition-colors">
         
         {/* Close */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-lg"
+          className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 rounded-lg"
         >
           <X className="h-5 w-5" />
         </button>
 
         {/* Tab switch */}
-        <div className="flex border-b border-slate-800 pb-3 mb-5 gap-2">
+        <div className="flex border-b border-slate-200 dark:border-slate-800 pb-3 mb-5 gap-2">
           <button
             onClick={() => { setTab('account'); setError(null); }}
             className={`flex items-center gap-2 pb-2 text-xs font-bold border-b-2 transition ${
               tab === 'account'
-                ? 'border-cyan-400 text-cyan-300'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
+                ? 'border-cyan-500 text-cyan-600 dark:text-cyan-300'
+                : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'
             }`}
           >
             <CreditCard className="h-4 w-4" />
@@ -93,8 +93,8 @@ export default function CreateAccountModal({
             onClick={() => { setTab('customer'); setError(null); }}
             className={`flex items-center gap-2 pb-2 text-xs font-bold border-b-2 transition ${
               tab === 'customer'
-                ? 'border-cyan-400 text-cyan-300'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
+                ? 'border-cyan-500 text-cyan-600 dark:text-cyan-300'
+                : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'
             }`}
           >
             <UserPlus className="h-4 w-4" />
@@ -103,8 +103,8 @@ export default function CreateAccountModal({
         </div>
 
         {error && (
-          <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs mb-4 flex items-center gap-2">
-            <AlertCircle className="h-4 w-4 text-rose-400 flex-shrink-0" />
+          <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/30 text-rose-700 dark:text-rose-300 text-xs mb-4 flex items-center gap-2">
+            <AlertCircle className="h-4 w-4 text-rose-500 flex-shrink-0" />
             <span>{error}</span>
           </div>
         )}
@@ -112,13 +112,13 @@ export default function CreateAccountModal({
         {tab === 'account' ? (
           <form onSubmit={handleCreateAccount} className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">
+              <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Account Owner
               </label>
               <select
                 value={targetCustId}
                 onChange={(e) => setTargetCustId(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:ring-1 focus:ring-cyan-400 font-mono"
+                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-cyan-500 font-mono"
               >
                 {customers.map(c => (
                   <option key={c.id} value={c.id}>
@@ -129,7 +129,7 @@ export default function CreateAccountModal({
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">
+              <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Account Type
               </label>
               <div className="grid grid-cols-2 gap-2">
@@ -138,8 +138,8 @@ export default function CreateAccountModal({
                   onClick={() => setAccountType('SAVINGS')}
                   className={`p-3 rounded-xl border text-left text-xs transition ${
                     accountType === 'SAVINGS'
-                      ? 'bg-cyan-500/10 border-cyan-500/40 text-cyan-300'
-                      : 'bg-slate-950 border-slate-800 text-slate-400'
+                      ? 'bg-cyan-50 dark:bg-cyan-500/10 border-cyan-300 dark:border-cyan-500/40 text-cyan-700 dark:text-cyan-300'
+                      : 'bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400'
                   }`}
                 >
                   <div className="font-bold">SAVINGS</div>
@@ -150,8 +150,8 @@ export default function CreateAccountModal({
                   onClick={() => setAccountType('CURRENT')}
                   className={`p-3 rounded-xl border text-left text-xs transition ${
                     accountType === 'CURRENT'
-                      ? 'bg-indigo-500/10 border-indigo-500/40 text-indigo-300'
-                      : 'bg-slate-950 border-slate-800 text-slate-400'
+                      ? 'bg-indigo-50 dark:bg-indigo-500/10 border-indigo-300 dark:border-indigo-500/40 text-indigo-700 dark:text-indigo-300'
+                      : 'bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400'
                   }`}
                 >
                   <div className="font-bold">CURRENT</div>
@@ -161,7 +161,7 @@ export default function CreateAccountModal({
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">
+              <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Initial Opening Balance (₹)
               </label>
               <input
@@ -169,7 +169,7 @@ export default function CreateAccountModal({
                 placeholder="10000"
                 value={openingBalance}
                 onChange={(e) => setOpeningBalance(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono focus:outline-none focus:ring-1 focus:ring-cyan-400"
+                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white font-mono focus:outline-none focus:ring-1 focus:ring-cyan-500"
               />
             </div>
 
@@ -186,7 +186,7 @@ export default function CreateAccountModal({
         ) : (
           <form onSubmit={handleCreateCustomer} className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">
+              <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Customer Full Name
               </label>
               <input
@@ -194,12 +194,12 @@ export default function CreateAccountModal({
                 placeholder="e.g. Priya Sharma"
                 value={custName}
                 onChange={(e) => setCustName(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:ring-1 focus:ring-cyan-400 font-medium"
+                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-cyan-500 font-medium"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">
+              <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Security PIN (4 digits)
               </label>
               <input
@@ -208,7 +208,7 @@ export default function CreateAccountModal({
                 maxLength={6}
                 value={custPin}
                 onChange={(e) => setCustPin(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono focus:outline-none focus:ring-1 focus:ring-cyan-400 tracking-widest"
+                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white font-mono focus:outline-none focus:ring-1 focus:ring-cyan-500 tracking-widest"
               />
             </div>
 
@@ -216,7 +216,7 @@ export default function CreateAccountModal({
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 px-4 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white font-bold text-xs uppercase tracking-wider transition shadow-lg shadow-indigo-500/20 disabled:opacity-50"
+                className="w-full py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs uppercase tracking-wider transition shadow-lg shadow-indigo-500/20 disabled:opacity-50"
               >
                 {loading ? 'Registering...' : 'Register Profile'}
               </button>

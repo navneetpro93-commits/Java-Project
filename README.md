@@ -1,6 +1,6 @@
 # FinGuard | Intelligent Banking Safety Console & Concurrency Lab
 
-An intelligent, multi-threaded banking safety system built for Semester 3 Core Java, paired with a modern React + Tailwind CSS dashboard.
+A modern, multi-threaded banking safety web platform with automated fraud prevention, real-time stress testing, multi-language translation via API, and full Light & Dark mode support.
 
 ---
 
@@ -33,60 +33,27 @@ Open **[http://localhost:5173](http://localhost:5173)** in your browser.
 
 ---
 
-## 🎓 Semester 3 Java Concepts Demonstrated
+## 🌟 New Features
 
-This project showcases core computer science and Java principles:
+### 🌐 1. Multilingual Support (via Translation API)
+Switch languages anytime directly from the top navigation:
+* 🇺🇸 **English** (`en`)
+* 🇮🇳 **हिन्दी** (`hi`)
+* 🇪🇸 **Español** (`es`)
+* 🇫🇷 **Français** (`fr`)
+* 🇩🇪 **Deutsch** (`de`)
 
-| Java Concept | Package / Class | What it Demonstrates |
-| :--- | :--- | :--- |
-| **Encapsulation & OOP** | `finguard.model.Account`, `Customer` | Private fields, getters, setters, synchronized state mutation. |
-| **Abstract Classes** | `Account` | Base contract defining `withdraw()`, `credit()`, and abstract `availableLimit()`. |
-| **Inheritance & Polymorphism** | `SavingsAccount`, `CurrentAccount` | `SavingsAccount` has interest & vault balances; `CurrentAccount` overrides limits to provide overdraft protection. |
-| **Interfaces** | `Freezeable` | Decouples safety freeze capability from account models. |
-| **Custom Exceptions** | `finguard.exception.*` | `AccountFrozenException`, `InsufficientBalanceException`, `AccountNotFoundException`, `InvalidPinException`. |
-| **Java Collections** | `HashMap`, `ArrayList`, `HashSet` | Fast account/customer lookups, transaction ledgers, category budgeting. |
-| **Comparators & PriorityQueue** | `TransactionPriorityComparator`, `ClearingHouse` | Priority queue where `SALARY` > `BILL` > `TRANSFER` leapfrogs standard clearing. |
-| **Multithreading** | `BankClock`, `SettlementWorker` | Background daemon threads (`setDaemon(true)`), `Thread.join()`, `Runnable`. |
-| **Synchronization & Locks** | `RaceLab.java`, `Account.java` | Synchronized methods and critical sections preventing race conditions and lost updates. |
-| **Inter-Thread Communication** | `ClearingHouse.java`, `BankClock.java` | Producer-consumer coordination via `wait()` and `notifyAll()`. |
-| **Deadlock Prevention** | `Bank.java` (`lockAndMove`) | Ordered locking by account number to break the circular wait condition. |
-| **Built-in HTTP Server** | `finguard.api.ApiServer` | Native Java `com.sun.net.httpserver.HttpServer` with RESTful JSON endpoints. |
+Includes high-speed zero-latency dictionary caches plus on-demand dynamic API translation fetching via the open translation API.
 
 ---
 
-## 🖥️ Frontend Features (React + Tailwind CSS)
+### 🌓 2. White (Light) & Dark Theme
+Toggle between crisp **White Mode** and sleek **Dark Fintech Mode** using the Sun/Moon toggle button. All dashboards, cards, tables, modals, and terminals automatically adjust with seamless transitions.
 
-1. **Live Dashboard & Metrics**:
-   - Real-time bank clock tick indicator with pulse status.
-   - Account portfolio cards with polymorphic attributes (Vault balance vs Overdraft limits).
-   - Masked / Unmasked account numbers with one-click toggle.
-   - Emergency freeze status badges.
+---
 
-2. **Money Operations & Live RuleEngine**:
-   - Supports Transfers, Cash Deposits, ATM Withdrawals, Priority Salary Credits, and Bill Payments.
-   - Real-time fraud detection and risk score assessment (0-100).
-   - High-value transfers (≥ ₹25,000) automatically diverted into the Cooldown Vault.
-   - Live streaming Java console output (`System.out` captured via `ConsoleCapture.java`).
-
-3. **Cooldown Vault (Safety Hold Queue)**:
-   - Visual inspection of pending / held transactions.
-   - Countdown to `readyTick`.
-   - "Cancel & Recall" button enabling users to cancel fraudulent transactions before settlement.
-
-4. **Audit Ledger & Filterable Statements**:
-   - Complete transaction history.
-   - Instant sorting by Date/Tick, Amount, or Risk Score.
-   - Search by purpose, recipient, or category.
-
-5. **Spending Intelligence & AI Heuristics**:
-   - Identifies user's Financial Personality (e.g. Disciplined Saver, Impulsive Spender, Balanced Budgeter).
-   - Visual progress bars for category budgets (Food, Bills, Travel, Shopping, etc.) with automatic over-budget warnings.
-
-6. **Savings Challenge Board**:
-   - 8-week automated micro-savings tracker.
-   - Streaks, targets, and leaderboard ranked using custom Java Comparators.
-
-7. **Interactive Concurrency Lab**:
-   - Run the **Race Condition Lab** (`RaceLab.java`): Demonstrates unsynchronized data corruption (`UnsafeBox`) vs synchronized safety (`SafeBox`).
-   - Run the **Priority Clearing Demo** (`ClearingHouse.java`): Shows producer-consumer prioritization in real-time.
-   - Run the **Thread Freeze Demo** (`CustomerWorker.java`): Shows worker threads halted by dynamic account freeze.
+### 🔐 3. Authentication & Profile Sessions
+* **Sign In**: Customer ID + Security PIN.
+* **Sign Up**: Full Legal Name, Security PIN, Account Type selection, and initial deposit.
+* **Instant Demo Logins**: 1-Click access for Navneet, Aarav, and Meera.
+* **Sign Out**: Profile dropdown menu with persistent session storage.
