@@ -319,22 +319,7 @@ public class Bank {
 
     public void printStatement(String accNo, String sortBy) throws AccountNotFoundException {
         Account acc = requireAccount(accNo);
-        ArrayList<Transaction> list = acc.copyHistory();
-        if ("AMOUNT".equalsIgnoreCase(sortBy)) {
-            Collections.sort(list, new Comparator<Transaction>() {
-                public int compare(Transaction a, Transaction b) {
-                    if (a.getAmount() > b.getAmount()) {
-                        return -1;
-                    }
-                    if (a.getAmount() < b.getAmount()) {
-                        return 1;
-                    }
-                    return 0;
-                }
-            });
-        } else {
-            Collections.sort(list);
-        }
+        ArrayList<Transaction> list = statement(accNo, sortBy);
         System.out.println("Statement " + acc.maskNumber() + "  type=" + acc.getAccountType()
                 + "  bal=Rs." + acc.getBalance() + "  frozen=" + acc.isFrozen());
         if (acc instanceof SavingsAccount) {
@@ -354,13 +339,7 @@ public class Bank {
     }
 
     public void printSpending(String accNo) throws AccountNotFoundException {
-        Account acc = requireAccount(accNo);
-        Customer c = requireCustomer(acc.getCustomerId());
-        double vault = 0;
-        if (acc instanceof SavingsAccount) {
-            vault = ((SavingsAccount) acc).getVaultBalance();
-        }
-        SpendingIntelligence.ArrayReport r = spendIntel.report(c, acc.copyCategorySpend(), vault);
+        SpendingIntelligence.ArrayReport r = spendingReport(accNo);
         for (int i = 0; i < r.lines.length; i++) {
             if (r.lines[i] != null) {
                 System.out.println(r.lines[i]);
@@ -391,5 +370,40 @@ public class Bank {
 
     public HashMap<String, Account> getAccounts() {
         return accounts;
+    }
+
+    public HashMap<String, Customer> getCustomers() {
+        return customers;
+    }
+
+    public ArrayList<Transaction> statement(String accNo, String sortBy) throws AccountNotFoundException {
+        Account acc = requireAccount(accNo);
+        ArrayList<Transaction> list = acc.copyHistory();
+        if ("AMOUNT".equalsIgnoreCase(sortBy)) {
+            Collections.sort(list, new Comparator<Transaction>() {
+                public int compare(Transaction a, Transaction b) {
+                    if (a.getAmount() > b.getAmount()) {
+                        return -1;
+                    }
+                    if (a.getAmount() < b.getAmount()) {
+                        return 1;
+                    }
+                    return 0;
+                }
+            });
+        } else {
+            Collections.sort(list);
+        }
+        return list;
+    }
+
+    public SpendingIntelligence.ArrayReport spendingReport(String accNo) throws AccountNotFoundException {
+        Account acc = requireAccount(accNo);
+        Customer c = requireCustomer(acc.getCustomerId());
+        double vault = 0;
+        if (acc instanceof SavingsAccount) {
+            vault = ((SavingsAccount) acc).getVaultBalance();
+        }
+        return spendIntel.report(c, acc.copyCategorySpend(), vault);
     }
 }

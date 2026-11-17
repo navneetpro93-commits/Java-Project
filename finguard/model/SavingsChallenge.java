@@ -53,6 +53,14 @@ public class SavingsChallenge implements Comparable<SavingsChallenge> {
                 + "  target/week=Rs." + weeklyTarget;
     }
 
+    public String getTitle() {
+        return title;
+    }
+
+    public double getWeeklyTarget() {
+        return weeklyTarget;
+    }
+
     public String getAccountNumber() {
         return accountNumber;
     }
