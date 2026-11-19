@@ -76,7 +76,7 @@ export default function AuthPage({ onLoginSuccess }) {
 
       // Data is now securely stored in MySQL!
       // As requested: user created account, now switch to Sign In so they can fill data and login!
-      setSuccessMessage(`✔ Account successfully created in MySQL database! Now sign in with your username "${user}".`);
+      setSuccessMessage(`✔ Account created successfully! Please sign in with your username "${user}".`);
       setLoginUsername(user);
       setLoginPassword('');
       setMode('login');
@@ -345,7 +345,7 @@ export default function AuthPage({ onLoginSuccess }) {
                   <div className="h-4 w-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
                 ) : (
                   <>
-                    <span>Create Account & Save to Database</span>
+                    <span>Create Account</span>
                     <ArrowRight className="h-4 w-4" />
                   </>
                 )}
@@ -405,27 +405,6 @@ export default function AuthPage({ onLoginSuccess }) {
                 </div>
               </div>
 
-              {/* Quick Demo Credentials */}
-              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 text-[11px] space-y-1.5">
-                <div className="text-slate-400 font-semibold">Demo Accounts in Database:</div>
-                <div className="flex flex-wrap gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => { setLoginUsername('navneet'); setLoginPassword('navneet18'); }}
-                    className="px-2 py-0.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:text-cyan-500 font-mono transition"
-                  >
-                    User: navneet / Pass: navneet18
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => { setLoginUsername('aarav'); setLoginPassword('2345'); }}
-                    className="px-2 py-0.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:text-cyan-500 font-mono transition"
-                  >
-                    User: aarav / Pass: 2345
-                  </button>
-                </div>
-              </div>
-
               <button
                 type="submit"
                 disabled={loading}
@@ -435,7 +414,7 @@ export default function AuthPage({ onLoginSuccess }) {
                   <div className="h-4 w-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
                 ) : (
                   <>
-                    <span>Sign In & Open Dashboard</span>
+                    <span>Sign In</span>
                     <ArrowRight className="h-4 w-4" />
                   </>
                 )}
