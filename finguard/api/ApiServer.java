@@ -105,6 +105,8 @@ public class ApiServer {
                 send(exchange, 200, "{\"log\":" + Json.q(priorityDemo()) + "}");
             } else if ("POST".equals(method) && "/api/labs/freeze".equals(path)) {
                 send(exchange, 200, "{\"log\":" + Json.q(freezeDemo()) + "}");
+            } else if ("GET".equals(method) && "/api/db/status".equals(path)) {
+                send(exchange, 200, dbStatusJson());
             } else {
                 send(exchange, 404, "{\"error\":\"Unknown route " + path + "\"}");
             }
@@ -208,6 +210,21 @@ public class ApiServer {
         json.append(",\"challenges\":").append(challengesJson());
         json.append('}');
         return json.toString();
+    }
+
+    private String dbStatusJson() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("{");
+        sb.append("\"connected\":").append(finguard.db.DBConnection.isConnected()).append(",");
+        sb.append("\"driverLoaded\":").append(finguard.db.DBConnection.isDriverLoaded()).append(",");
+        sb.append("\"driver\":\"com.mysql.cj.jdbc.Driver\",");
+        sb.append("\"url\":").append(Json.q(finguard.db.DBConnection.getUrl())).append(",");
+        sb.append("\"user\":").append(Json.q(finguard.db.DBConnection.getUser())).append(",");
+        String err = finguard.db.DBConnection.getLastError();
+        sb.append("\"lastError\":").append(err == null ? "null" : Json.q(err)).append(",");
+        sb.append("\"tables\":[\"customers\",\"accounts\",\"transactions\",\"cooldown_queue\",\"savings_challenges\"]");
+        sb.append("}");
+        return sb.toString();
     }
 
     private String customerJson(Customer customer) {

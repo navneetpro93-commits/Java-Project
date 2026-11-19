@@ -43,6 +43,10 @@ public class Customer {
         return name;
     }
 
+    public String getPin() {
+        return pin;
+    }
+
     public ArrayList<String> getAccountNumbers() {
         return accountNumbers;
     }

@@ -9,6 +9,7 @@ import {
   PieChart, 
   Target, 
   Cpu, 
+  GraduationCap,
   LogOut, 
   RefreshCw,
   ChevronDown,

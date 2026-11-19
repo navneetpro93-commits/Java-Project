@@ -1,6 +1,7 @@
 package finguard.model;
 
 public class SavingsAccount extends Account {
+    public static final double MIN_BALANCE = 500.0;
     private double vaultBalance;
     private boolean roundUpEnabled;
 

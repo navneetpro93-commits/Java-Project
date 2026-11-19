@@ -39,6 +39,7 @@ public class ApiMain {
         settleThread.start();
         pulseThread.start();
 
+        bank.initDatabase();
         bank.seedDemo();
         int port = 8080;
         if (args.length > 0) {
