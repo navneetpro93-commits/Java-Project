@@ -23,19 +23,10 @@ function MainApp() {
 
   const { t } = useLanguage();
 
-  // Authentication State: Persisted across tab closures and refreshes
-  const [activeCustomer, setActiveCustomer] = useState(() => {
-    try {
-      const saved = localStorage.getItem('finguard_active_user');
-      return saved ? JSON.parse(saved) : null;
-    } catch {
-      return null;
-    }
-  });
+  // Authentication State: Always start as null so Sign Up & Create Account comes first before dashboard
+  const [activeCustomer, setActiveCustomer] = useState(null);
 
-  const [selectedAccount, setSelectedAccount] = useState(() => {
-    return localStorage.getItem('finguard_selected_account') || '';
-  });
+  const [selectedAccount, setSelectedAccount] = useState('');
   
   // Modals
   const [freezeAccount, setFreezeAccount] = useState(null);

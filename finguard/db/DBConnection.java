@@ -98,10 +98,11 @@ public class DBConnection {
                     + "username VARCHAR(50) UNIQUE,"
                     + "password VARCHAR(100),"
                     + "name VARCHAR(100) NOT NULL,"
-                    + "pin VARCHAR(10) NOT NULL,"
+                    + "pin VARCHAR(100) NOT NULL,"
                     + "personality VARCHAR(20) DEFAULT 'NEW',"
                     + "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)");
 
+            try { stmt.executeUpdate("ALTER TABLE customers MODIFY pin VARCHAR(100)"); } catch (Exception ignored) {}
             try { stmt.executeUpdate("ALTER TABLE customers ADD COLUMN username VARCHAR(50) UNIQUE"); } catch (Exception ignored) {}
             try { stmt.executeUpdate("ALTER TABLE customers ADD COLUMN password VARCHAR(100)"); } catch (Exception ignored) {}
 
