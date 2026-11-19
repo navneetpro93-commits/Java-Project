@@ -541,28 +541,7 @@ public class Bank {
     }
 
     public void seedDemo() {
-        if (!customers.isEmpty()) {
-            System.out.println("Using existing " + customers.size() + " customers and " + accounts.size() + " accounts from database.");
-            return;
-        }
-        try {
-            Customer a = createCustomer("Navneet", "1234");
-            Customer b = createCustomer("Aarav", "2345");
-            Customer c = createCustomer("Meera", "3456");
-            Account aSav = createAccount(a.getCustomerId(), "SAVINGS", 100000);
-            Account aCur = createAccount(a.getCustomerId(), "CURRENT", 25000);
-            Account bSav = createAccount(b.getCustomerId(), "SAVINGS", 40000);
-            Account cSav = createAccount(c.getCustomerId(), "SAVINGS", 15000);
-            System.out.println("Seeded demo customers:");
-            System.out.println("  " + a.getCustomerId() + " Navneet PIN 1234  " + aSav.getAccountNumber()
-                    + " (SAVINGS 100000)  " + aCur.getAccountNumber() + " (CURRENT 25000)");
-            System.out.println("  " + b.getCustomerId() + " Aarav   PIN 2345  " + bSav.getAccountNumber()
-                    + " (SAVINGS 40000)");
-            System.out.println("  " + c.getCustomerId() + " Meera   PIN 3456  " + cSav.getAccountNumber()
-                    + " (SAVINGS 15000)");
-        } catch (AccountNotFoundException e) {
-            System.out.println(e.getMessage());
-        }
+        // No-op: Database and memory remain completely clean until real users register
     }
 
     public HashMap<String, Account> getAccounts() {

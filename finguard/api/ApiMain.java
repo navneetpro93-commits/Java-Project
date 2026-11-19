@@ -40,7 +40,6 @@ public class ApiMain {
         pulseThread.start();
 
         bank.initDatabase();
-        bank.seedDemo();
         int port = 8080;
         if (args.length > 0) {
             port = Integer.parseInt(args[0]);
