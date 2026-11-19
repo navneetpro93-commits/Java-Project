@@ -6,9 +6,11 @@
 CREATE DATABASE IF NOT EXISTS finguard_db;
 USE finguard_db;
 
--- 1. Customers Table (Entity with Primary Key)
+-- 1. Customers Table (Entity with Primary Key, Username, and Password)
 CREATE TABLE IF NOT EXISTS customers (
     customer_id VARCHAR(10) PRIMARY KEY,
+    username VARCHAR(50) UNIQUE,
+    password VARCHAR(100) NOT NULL,
     name VARCHAR(100) NOT NULL,
     pin VARCHAR(10) NOT NULL,
     personality VARCHAR(20) DEFAULT 'NEW',
