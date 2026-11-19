@@ -275,7 +275,19 @@ public class Bank {
     }
 
     public Account requireAccount(String accNo) throws AccountNotFoundException {
-        Account acc = accounts.get(accNo);
+        if (accNo == null || accNo.trim().isEmpty()) {
+            throw new AccountNotFoundException("Account number is required.");
+        }
+        String key = accNo.trim().toUpperCase();
+        Account acc = accounts.get(key);
+        if (acc == null) {
+            for (Account a : accounts.values()) {
+                if (a.getAccountNumber().equalsIgnoreCase(key)) {
+                    acc = a;
+                    break;
+                }
+            }
+        }
         if (acc == null) {
             throw new AccountNotFoundException("No account " + accNo);
         }
@@ -283,7 +295,19 @@ public class Bank {
     }
 
     public Customer requireCustomer(String id) throws AccountNotFoundException {
-        Customer c = customers.get(id);
+        if (id == null || id.trim().isEmpty()) {
+            throw new AccountNotFoundException("Customer ID is required.");
+        }
+        String key = id.trim().toUpperCase();
+        Customer c = customers.get(key);
+        if (c == null) {
+            for (Customer cand : customers.values()) {
+                if (cand.getCustomerId().equalsIgnoreCase(key) || cand.getUsername().equalsIgnoreCase(key)) {
+                    c = cand;
+                    break;
+                }
+            }
+        }
         if (c == null) {
             throw new AccountNotFoundException("No customer " + id);
         }
@@ -373,9 +397,10 @@ public class Bank {
             throws AccountNotFoundException, AccountFrozenException, InsufficientBalanceException {
         Account from = requireAccount(request.getFromAccount());
         Account to = null;
-        if (request.getToAccount() != null && request.getToAccount().length() > 0
-                && accounts.containsKey(request.getToAccount())) {
-            to = requireAccount(request.getToAccount());
+        if (request.getToAccount() != null && request.getToAccount().trim().length() > 0) {
+            try {
+                to = requireAccount(request.getToAccount());
+            } catch (AccountNotFoundException ignored) {}
         }
 
         if (to == null) {

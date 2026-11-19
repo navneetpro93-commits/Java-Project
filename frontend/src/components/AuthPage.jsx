@@ -59,7 +59,7 @@ export default function AuthPage({ onLoginSuccess }) {
       setError('Password must be at least 4 characters.');
       return;
     }
-    if (pass !== signupConfirmPassword.trim()) {
+    if (pass.toLowerCase() !== signupConfirmPassword.trim().toLowerCase()) {
       setError('Passwords do not match. Please re-enter your password.');
       return;
     }
