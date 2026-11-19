@@ -112,25 +112,22 @@ public class Bank {
         String cleanPass = (password != null && !password.trim().isEmpty()) ? password.trim() : "1234";
         String cleanName = (name != null && !name.trim().isEmpty()) ? name.trim() : cleanUser;
 
-        // Check if customer with this username already exists
-        Customer existing = null;
+        // 1. Check if username already exists in memory
         for (Customer c : customers.values()) {
             if (c.getUsername().equalsIgnoreCase(cleanUser)) {
-                existing = c;
-                break;
+                throw new IllegalArgumentException("Username '" + cleanUser + "' already exists. Please choose a different username or sign in.");
             }
         }
 
-        if (existing != null) {
-            existing.setPassword(cleanPass);
-            existing.setName(cleanName);
-            try {
-                customerDAO.save(existing);
-            } catch (Exception e) {
-                System.err.println("[MySQL Error] Could not update customer: " + e.getMessage());
+        // 2. Check if username already exists in MySQL database
+        try {
+            Customer dbCustomer = customerDAO.findByUsername(cleanUser);
+            if (dbCustomer != null && dbCustomer.getUsername().equalsIgnoreCase(cleanUser)) {
+                throw new IllegalArgumentException("Username '" + cleanUser + "' already exists. Please choose a different username or sign in.");
             }
-            return existing;
-        }
+        } catch (IllegalArgumentException e) {
+            throw e;
+        } catch (Exception ignored) {}
 
         customerSeq++;
         String id = "C" + customerSeq;
@@ -140,6 +137,7 @@ public class Bank {
             customerDAO.save(c);
         } catch (Exception e) {
             System.err.println("[MySQL Error] Could not save customer: " + e.getMessage());
+            throw new RuntimeException("Database error saving customer: " + e.getMessage());
         }
         return c;
     }
@@ -444,6 +442,10 @@ public class Bank {
                 if (sav.getBalance() >= spare && !sav.isFrozen()) {
                     sav.debit(spare);
                     sav.addToVault(spare);
+                    try {
+                        accountDAO.updateBalance(sav.getAccountNumber(), sav.getBalance());
+                        accountDAO.updateVaultBalance(sav.getAccountNumber(), sav.getVaultBalance());
+                    } catch (Exception ignored) {}
                     System.out.println("  [ROUND-UP] extra Rs." + spare + " moved to safety vault. Vault=Rs."
                             + sav.getVaultBalance());
                 }

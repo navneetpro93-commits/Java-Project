@@ -23,10 +23,19 @@ function MainApp() {
 
   const { t } = useLanguage();
 
-  // Authentication State: Always start as null so Login & Sign Up page comes first!
-  const [activeCustomer, setActiveCustomer] = useState(null);
+  // Authentication State: Persisted across tab closures and refreshes
+  const [activeCustomer, setActiveCustomer] = useState(() => {
+    try {
+      const saved = localStorage.getItem('finguard_active_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
 
-  const [selectedAccount, setSelectedAccount] = useState('');
+  const [selectedAccount, setSelectedAccount] = useState(() => {
+    return localStorage.getItem('finguard_selected_account') || '';
+  });
   
   // Modals
   const [freezeAccount, setFreezeAccount] = useState(null);
@@ -35,11 +44,6 @@ function MainApp() {
   // Transfers pre-fill state
   const [transferType, setTransferType] = useState('TRANSFER');
   const [transferAccount, setTransferAccount] = useState('');
-
-  // Clear any residual browser session on initial mount so Login & Sign Up always displays first
-  useEffect(() => {
-    localStorage.removeItem('finguard_user');
-  }, []);
 
   // Fetch full overview from API
   const refreshData = useCallback(async (isInitial = false) => {
@@ -55,15 +59,19 @@ function MainApp() {
         const matching = data.customers.find((c) => c.id === activeCustomer.id);
         if (matching) {
           setActiveCustomer(matching);
+          localStorage.setItem('finguard_active_user', JSON.stringify(matching));
         }
       }
 
       // Auto-select account if none selected
       if (data.accounts && data.accounts.length > 0) {
         setSelectedAccount((prev) => {
-          if (!prev) return data.accounts[0].number;
-          const found = data.accounts.find((a) => a.number === prev);
-          return found ? prev : data.accounts[0].number;
+          let chosen = prev;
+          if (!chosen) chosen = data.accounts[0].number;
+          const found = data.accounts.find((a) => a.number === chosen);
+          const finalAcc = found ? chosen : data.accounts[0].number;
+          localStorage.setItem('finguard_selected_account', finalAcc);
+          return finalAcc;
         });
       }
     } catch (err) {
@@ -86,6 +94,11 @@ function MainApp() {
   // Handle Login & Signup Success
   const handleLoginSuccess = (customer) => {
     setActiveCustomer(customer);
+    try {
+      localStorage.setItem('finguard_active_user', JSON.stringify(customer));
+    } catch (e) {
+      console.warn('Could not save session to localStorage:', e);
+    }
     setCurrentTab('dashboard');
     refreshData(false);
   };
@@ -93,7 +106,8 @@ function MainApp() {
   // Handle Sign Out
   const handleLogout = () => {
     setActiveCustomer(null);
-    localStorage.removeItem('finguard_user');
+    localStorage.removeItem('finguard_active_user');
+    localStorage.removeItem('finguard_selected_account');
   };
 
   // Quick navigation handlers

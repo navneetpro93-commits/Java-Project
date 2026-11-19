@@ -92,7 +92,7 @@ public class ApiServer {
                 }
                 Customer customer = bank.createCustomer(username, password, name);
                 Account account = bank.createAccount(customer.getCustomerId(), accountType, deposit);
-                send(exchange, 200, "{\"ok\":true,\"message\":\"Account registered successfully in MySQL database! Please sign in with your credentials.\",\"customer\":" + customerJson(customer) + ",\"account\":" + accountJson(account) + "}");
+                send(exchange, 200, "{\"ok\":true,\"message\":\"Account registered successfully! Please sign in with your credentials.\",\"customer\":" + customerJson(customer) + ",\"account\":" + accountJson(account) + "}");
             } else if ("POST".equals(method) && "/api/customers".equals(path)) {
                 String username = Json.field(body, "username");
                 String password = Json.field(body, "password");

@@ -90,6 +90,17 @@ public class AccountDAO {
         conn.close();
     }
 
+    public void updateVaultBalance(String accNo, double vaultBalance) throws SQLException {
+        String sql = "UPDATE accounts SET vault_balance = ? WHERE account_number = ?";
+        Connection conn = DBConnection.getConnection();
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ps.setDouble(1, vaultBalance);
+        ps.setString(2, accNo);
+        ps.executeUpdate();
+        ps.close();
+        conn.close();
+    }
+
     public void setFrozen(String accNo, boolean frozen) throws SQLException {
         String sql = "UPDATE accounts SET is_frozen = ? WHERE account_number = ?";
         Connection conn = DBConnection.getConnection();
