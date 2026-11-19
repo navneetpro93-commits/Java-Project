@@ -69,9 +69,9 @@ public class RuleEngine {
             result.fired.add("+10 large round-figure amount");
         }
 
-        if (result.score >= 70) {
+        if (result.score >= 85) {
             result.decision = BLOCK;
-        } else if (result.score >= 40) {
+        } else if (result.score >= 70) {
             result.decision = COOLDOWN;
         } else {
             result.decision = ALLOW;

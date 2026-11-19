@@ -5,6 +5,8 @@ import java.util.HashMap;
 
 public class Customer {
     private String customerId;
+    private String username;
+    private String password;
     private String name;
     private String pin;
     private ArrayList<String> accountNumbers;
@@ -12,9 +14,15 @@ public class Customer {
     private String personality;
 
     public Customer(String customerId, String name, String pin) {
+        this(customerId, name != null ? name.toLowerCase().replaceAll("\\s+", "") : customerId, pin, name);
+    }
+
+    public Customer(String customerId, String username, String password, String name) {
         this.customerId = customerId;
-        this.name = name;
-        this.pin = pin;
+        this.username = username != null ? username.trim() : "";
+        this.password = password != null ? password : "";
+        this.name = name != null ? name.trim() : this.username;
+        this.pin = this.password;
         this.accountNumbers = new ArrayList<String>();
         this.categoryBudgets = new HashMap<String, Double>();
         this.categoryBudgets.put("FOOD", 4000.0);
@@ -28,7 +36,28 @@ public class Customer {
     }
 
     public boolean checkPin(String entered) {
-        return pin.equals(entered);
+        return (pin != null && pin.equals(entered)) || (password != null && password.equals(entered));
+    }
+
+    public boolean checkPassword(String entered) {
+        return checkPin(entered);
+    }
+
+    public String getUsername() {
+        return username != null && !username.isEmpty() ? username : customerId;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password != null ? password : pin;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+        this.pin = password;
     }
 
     public void addAccountNumber(String accountNumber) {
@@ -41,6 +70,10 @@ public class Customer {
 
     public String getName() {
         return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getPin() {

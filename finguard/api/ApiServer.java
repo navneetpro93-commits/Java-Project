@@ -65,10 +65,41 @@ public class ApiServer {
             } else if ("GET".equals(method) && "/api/overview".equals(path)) {
                 send(exchange, 200, overviewJson());
             } else if ("POST".equals(method) && "/api/login".equals(path)) {
-                Customer customer = bank.login(Json.field(body, "customerId"), Json.field(body, "pin"));
+                String username = Json.field(body, "username");
+                if (username == null || username.isEmpty()) {
+                    username = Json.field(body, "customerId");
+                }
+                String password = Json.field(body, "password");
+                if (password == null || password.isEmpty()) {
+                    password = Json.field(body, "pin");
+                }
+                Customer customer = bank.login(username, password);
                 send(exchange, 200, "{\"customer\":" + customerJson(customer) + "}");
+            } else if ("POST".equals(method) && "/api/register".equals(path)) {
+                String username = Json.field(body, "username");
+                String password = Json.field(body, "password");
+                String name = Json.field(body, "name");
+                if (name == null || name.isEmpty()) {
+                    name = username;
+                }
+                String accountType = Json.field(body, "accountType");
+                if (accountType == null || accountType.isEmpty()) {
+                    accountType = "SAVINGS";
+                }
+                double deposit = Json.num(body, "deposit");
+                if (deposit <= 0) {
+                    deposit = 10000;
+                }
+                Customer customer = bank.createCustomer(username, password, name);
+                Account account = bank.createAccount(customer.getCustomerId(), accountType, deposit);
+                send(exchange, 200, "{\"ok\":true,\"message\":\"Account registered successfully in MySQL database! Please sign in with your credentials.\",\"customer\":" + customerJson(customer) + ",\"account\":" + accountJson(account) + "}");
             } else if ("POST".equals(method) && "/api/customers".equals(path)) {
-                Customer customer = bank.createCustomer(Json.field(body, "name"), Json.field(body, "pin"));
+                String username = Json.field(body, "username");
+                String password = Json.field(body, "password");
+                String name = Json.field(body, "name");
+                if (username == null || username.isEmpty()) username = name;
+                if (password == null || password.isEmpty()) password = Json.field(body, "pin");
+                Customer customer = bank.createCustomer(username, password, name);
                 send(exchange, 200, "{\"customer\":" + customerJson(customer) + "}");
             } else if ("POST".equals(method) && "/api/accounts".equals(path)) {
                 Account account = bank.createAccount(
@@ -117,16 +148,32 @@ public class ApiServer {
     }
 
     private void move(HttpExchange exchange, String body) throws IOException {
-        final String rawType = Json.field(body, "type");
-        final String type = rawType == null ? "" : rawType.trim().toUpperCase();
-        final String from = Json.field(body, "fromAccount");
-        final String to = Json.field(body, "toAccount");
+        String rawType = Json.field(body, "type");
+        String resolvedType = rawType == null ? "" : rawType.trim().toUpperCase();
+        String from = Json.field(body, "fromAccount");
+        if (from == null || from.isEmpty()) from = Json.field(body, "from");
+        String to = Json.field(body, "toAccount");
+        if (to == null || to.isEmpty()) to = Json.field(body, "to");
         final double amount = Json.num(body, "amount");
         final String purpose = Json.field(body, "purpose");
+
+        if ("CREDIT".equalsIgnoreCase(resolvedType)) {
+            resolvedType = TransactionRequest.TYPE_DEPOSIT;
+            if ((to == null || to.isEmpty()) && (from != null && !from.isEmpty())) {
+                to = from;
+                from = "";
+            }
+        } else if ("DEBIT".equalsIgnoreCase(resolvedType)) {
+            resolvedType = TransactionRequest.TYPE_WITHDRAW;
+        }
+
+        final String type = resolvedType;
+        final String fromAcc = from != null ? from : "";
+        final String toAcc = to != null ? to : "";
         final String[] message = new String[1];
         String log = ConsoleCapture.run(new Runnable() {
             public void run() {
-                TransactionRequest request = bank.buildRequest(type, from, to, amount, purpose);
+                TransactionRequest request = bank.buildRequest(type, fromAcc, toAcc, amount, purpose);
                 message[0] = bank.settle(request, false);
                 System.out.println(message[0]);
             }
@@ -239,6 +286,7 @@ public class ApiServer {
         }
         accounts.append(']');
         return "{\"id\":" + Json.q(customer.getCustomerId())
+                + ",\"username\":" + Json.q(customer.getUsername())
                 + ",\"name\":" + Json.q(customer.getName())
                 + ",\"personality\":" + Json.q(customer.getPersonality())
                 + ",\"accounts\":" + accounts + "}";

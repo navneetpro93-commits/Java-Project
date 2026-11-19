@@ -104,13 +104,43 @@ public class Bank {
     }
 
     public synchronized Customer createCustomer(String name, String pin) {
+        return createCustomer(name != null ? name.toLowerCase().replaceAll("\\s+", "") : "", pin, name);
+    }
+
+    public synchronized Customer createCustomer(String username, String password, String name) {
+        String cleanUser = (username != null && !username.trim().isEmpty()) ? username.trim() : ("user" + (customerSeq + 1));
+        String cleanPass = (password != null && !password.trim().isEmpty()) ? password.trim() : "1234";
+        String cleanName = (name != null && !name.trim().isEmpty()) ? name.trim() : cleanUser;
+
+        // Check if customer with this username already exists
+        Customer existing = null;
+        for (Customer c : customers.values()) {
+            if (c.getUsername().equalsIgnoreCase(cleanUser)) {
+                existing = c;
+                break;
+            }
+        }
+
+        if (existing != null) {
+            existing.setPassword(cleanPass);
+            existing.setName(cleanName);
+            try {
+                customerDAO.save(existing);
+            } catch (Exception e) {
+                System.err.println("[MySQL Error] Could not update customer: " + e.getMessage());
+            }
+            return existing;
+        }
+
         customerSeq++;
         String id = "C" + customerSeq;
-        Customer c = new Customer(id, name, pin);
+        Customer c = new Customer(id, cleanUser, cleanPass, cleanName);
         customers.put(id, c);
         try {
             customerDAO.save(c);
-        } catch (Exception ignored) {}
+        } catch (Exception e) {
+            System.err.println("[MySQL Error] Could not save customer: " + e.getMessage());
+        }
         return c;
     }
 
@@ -133,18 +163,116 @@ public class Bank {
         c.addAccountNumber(accNo);
         try {
             accountDAO.save(acc);
+            if (opening > 0) {
+                int id;
+                synchronized (this) {
+                    id = txnSeq++;
+                }
+                Transaction initTxn = new Transaction(id, clock.now(), TransactionRequest.TYPE_DEPOSIT,
+                        opening, null, accNo, "Account Opening Deposit", "TRANSFER", "SUCCESS", 0);
+                acc.record(initTxn);
+                transactionDAO.save(initTxn);
+            }
         } catch (Exception ignored) {}
         return acc;
     }
 
-    public Customer login(String customerId, String pin) throws AccountNotFoundException, InvalidPinException {
-        Customer c = customers.get(customerId);
+    public Customer login(String identifier, String password) throws AccountNotFoundException, InvalidPinException {
+        if (identifier == null || identifier.trim().isEmpty()) {
+            throw new AccountNotFoundException("Username is required.");
+        }
+        if (password == null || password.trim().isEmpty()) {
+            throw new InvalidPinException("Password is required.");
+        }
+        String term = identifier.trim();
+        String pass = password.trim();
+        Customer c = null;
+
+        // 1. Direct username match where password matches
+        for (Customer cand : customers.values()) {
+            if (cand.getUsername().equalsIgnoreCase(term) && cand.checkPassword(pass)) {
+                c = cand;
+                break;
+            }
+        }
+
+        // 2. If no direct match with password, check if username exists to give clear error
         if (c == null) {
-            throw new AccountNotFoundException("Unknown customer id");
+            for (Customer cand : customers.values()) {
+                if (cand.getUsername().equalsIgnoreCase(term)) {
+                    throw new InvalidPinException("Incorrect password for username '" + term + "'. Please try again.");
+                }
+            }
         }
-        if (!c.checkPin(pin)) {
-            throw new InvalidPinException("PIN did not match");
+
+        // 3. Match by Customer ID (e.g. C101) or Name
+        if (c == null) {
+            Customer byId = customers.get(term.toUpperCase());
+            if (byId == null) byId = customers.get(term);
+            if (byId != null) {
+                if (byId.checkPassword(pass)) {
+                    c = byId;
+                } else {
+                    throw new InvalidPinException("Incorrect password for customer ID '" + term + "'.");
+                }
+            }
         }
+
+        if (c == null) {
+            for (Customer cand : customers.values()) {
+                if (cand.getName().equalsIgnoreCase(term)) {
+                    if (cand.checkPassword(pass)) {
+                        c = cand;
+                        break;
+                    } else {
+                        throw new InvalidPinException("Incorrect password for '" + term + "'.");
+                    }
+                }
+            }
+        }
+
+        // 4. Account Number match (e.g. "FG1001")
+        if (c == null) {
+            Account acc = accounts.get(term.toUpperCase());
+            if (acc != null) {
+                Customer byAcc = customers.get(acc.getCustomerId());
+                if (byAcc != null) {
+                    if (byAcc.checkPassword(pass)) {
+                        c = byAcc;
+                    } else {
+                        throw new InvalidPinException("Incorrect password for account '" + term + "'.");
+                    }
+                }
+            }
+        }
+
+        // 5. Query MySQL database directly by username or identifier
+        if (c == null) {
+            try {
+                c = customerDAO.findByUsername(term);
+                if (c != null) {
+                    if (!c.checkPassword(pass)) {
+                        throw new InvalidPinException("Incorrect password for '" + term + "'. Please try again.");
+                    }
+                    customers.put(c.getCustomerId(), c);
+                }
+            } catch (InvalidPinException e) {
+                throw e;
+            } catch (Exception ignored) {}
+        }
+
+        if (c == null) {
+            throw new AccountNotFoundException("No account found for username '" + term + "'. Please create an account first.");
+        }
+
+        // Refresh customer's accounts list with all active accounts belonging to them
+        c.getAccountNumbers().clear();
+        for (Account a : accounts.values()) {
+            if (a.getCustomerId().equals(c.getCustomerId())) {
+                c.addAccountNumber(a.getAccountNumber());
+            }
+        }
+
         return c;
     }
 

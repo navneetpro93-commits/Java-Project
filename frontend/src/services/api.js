@@ -51,10 +51,22 @@ export const api = {
   getOverview: () => request('/overview'),
   
   // Authentication & Customers
-  login: (customerId, pin) => 
+  login: (username, password) => 
     request('/login', {
       method: 'POST',
-      body: JSON.stringify({ customerId, pin }),
+      body: JSON.stringify({ username, password, customerId: username, pin: password }),
+    }),
+
+  register: ({ username, password, name, accountType, deposit }) =>
+    request('/register', {
+      method: 'POST',
+      body: JSON.stringify({
+        username,
+        password,
+        name: name || username,
+        accountType: accountType || 'SAVINGS',
+        deposit: Number(deposit) || 10000,
+      }),
     }),
 
   createCustomer: (name, pin) =>
