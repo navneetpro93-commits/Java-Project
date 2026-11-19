@@ -1,0 +1,8 @@
+__MACOSX/
+**/.DS_Store
+**/node_modules/
+**/dist/
+*.log
+.env
+
+Java Project/finguard/db/db.properties
