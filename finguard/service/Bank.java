@@ -32,6 +32,9 @@ public class Bank {
     private SpendingIntelligence spendIntel;
     private CooldownVault cooldown;
     private ChallengeBoard challenges;
+    private finguard.db.CustomerDAO customerDAO;
+    private finguard.db.AccountDAO accountDAO;
+    private finguard.db.TransactionDAO transactionDAO;
     private int customerSeq;
     private int accountSeq;
     private int requestSeq;
@@ -46,10 +49,46 @@ public class Bank {
         this.rules = new RuleEngine();
         this.spendIntel = new SpendingIntelligence();
         this.challenges = new ChallengeBoard();
+        this.customerDAO = new finguard.db.CustomerDAO();
+        this.accountDAO = new finguard.db.AccountDAO();
+        this.transactionDAO = new finguard.db.TransactionDAO();
         this.customerSeq = 100;
         this.accountSeq = 1000;
         this.requestSeq = 1;
         this.txnSeq = 1;
+    }
+
+    public void initDatabase() {
+        boolean dbOk = finguard.db.DBConnection.initializeSchema();
+        if (dbOk) {
+            try {
+                HashMap<String, Customer> dbCustomers = customerDAO.findAll();
+                HashMap<String, Account> dbAccounts = accountDAO.findAll();
+                if (dbCustomers != null && !dbCustomers.isEmpty()) {
+                    for (Customer c : dbCustomers.values()) {
+                        customers.put(c.getCustomerId(), c);
+                        try {
+                            int idNum = Integer.parseInt(c.getCustomerId().replaceAll("\\D", ""));
+                            if (idNum > customerSeq) customerSeq = idNum;
+                        } catch (Exception ignored) {}
+                    }
+                    for (Account a : dbAccounts.values()) {
+                        accounts.put(a.getAccountNumber(), a);
+                        Customer owner = customers.get(a.getCustomerId());
+                        if (owner != null) {
+                            owner.addAccountNumber(a.getAccountNumber());
+                        }
+                        try {
+                            int accNum = Integer.parseInt(a.getAccountNumber().replaceAll("\\D", ""));
+                            if (accNum > accountSeq) accountSeq = accNum;
+                        } catch (Exception ignored) {}
+                    }
+                    System.out.println("[JDBC] Initialized from MySQL database (Loaded " + customers.size() + " customers, " + accounts.size() + " accounts).");
+                }
+            } catch (Exception e) {
+                System.out.println("[JDBC] Notice reading relational tables: " + e.getMessage());
+            }
+        }
     }
 
     public BankClock getClock() {
@@ -69,6 +108,9 @@ public class Bank {
         String id = "C" + customerSeq;
         Customer c = new Customer(id, name, pin);
         customers.put(id, c);
+        try {
+            customerDAO.save(c);
+        } catch (Exception ignored) {}
         return c;
     }
 
@@ -89,6 +131,9 @@ public class Bank {
         }
         accounts.put(accNo, acc);
         c.addAccountNumber(accNo);
+        try {
+            accountDAO.save(acc);
+        } catch (Exception ignored) {}
         return acc;
     }
 
@@ -161,6 +206,10 @@ public class Bank {
             String cat = spendIntel.categorize(request.getPurpose());
             Transaction t = nextTxn(request, cat, "SUCCESS", 0);
             acc.record(t);
+            try {
+                accountDAO.updateBalance(acc.getAccountNumber(), acc.getBalance());
+                transactionDAO.save(t);
+            } catch (Exception ignored) {}
             maybeChallenge(acc, request);
             return "SUCCESS credit Rs." + request.getAmount() + " to " + acc.maskNumber()
                     + " bal=" + acc.getBalance();
@@ -208,7 +257,12 @@ public class Bank {
                 from.assertNotFrozen();
                 from.debit(request.getAmount());
                 String cat = spendIntel.categorize(request.getPurpose());
-                from.record(nextTxn(request, cat, "SUCCESS", score));
+                Transaction t = nextTxn(request, cat, "SUCCESS", score);
+                from.record(t);
+                try {
+                    accountDAO.updateBalance(from.getAccountNumber(), from.getBalance());
+                    transactionDAO.save(t);
+                } catch (Exception ignored) {}
             }
             return;
         }
@@ -229,6 +283,11 @@ public class Bank {
                 Transaction t = nextTxn(request, cat, "SUCCESS", score);
                 from.record(t);
                 to.record(t);
+                try {
+                    accountDAO.updateBalance(from.getAccountNumber(), from.getBalance());
+                    accountDAO.updateBalance(to.getAccountNumber(), to.getBalance());
+                    transactionDAO.save(t);
+                } catch (Exception ignored) {}
             }
         }
     }
@@ -299,6 +358,9 @@ public class Bank {
         }
         acc.freeze();
         frozenIds.add(accNo);
+        try {
+            accountDAO.setFrozen(accNo, true);
+        } catch (Exception ignored) {}
         System.out.println("  [FREEZE] " + acc.maskNumber() + " is now frozen. Set=" + frozenIds);
     }
 
@@ -314,6 +376,9 @@ public class Bank {
         }
         acc.unfreeze();
         frozenIds.remove(accNo);
+        try {
+            accountDAO.setFrozen(accNo, false);
+        } catch (Exception ignored) {}
         System.out.println("  [FREEZE] " + acc.maskNumber() + " restored");
     }
 
@@ -348,6 +413,10 @@ public class Bank {
     }
 
     public void seedDemo() {
+        if (!customers.isEmpty()) {
+            System.out.println("Using existing " + customers.size() + " customers and " + accounts.size() + " accounts from database.");
+            return;
+        }
         try {
             Customer a = createCustomer("Navneet", "1234");
             Customer b = createCustomer("Aarav", "2345");
@@ -378,6 +447,12 @@ public class Bank {
 
     public ArrayList<Transaction> statement(String accNo, String sortBy) throws AccountNotFoundException {
         Account acc = requireAccount(accNo);
+        try {
+            ArrayList<Transaction> dbList = transactionDAO.findByAccount(accNo, sortBy);
+            if (dbList != null && !dbList.isEmpty()) {
+                return dbList;
+            }
+        } catch (Exception ignored) {}
         ArrayList<Transaction> list = acc.copyHistory();
         if ("AMOUNT".equalsIgnoreCase(sortBy)) {
             Collections.sort(list, new Comparator<Transaction>() {

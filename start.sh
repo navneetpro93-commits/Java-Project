@@ -12,8 +12,8 @@ echo "=========================================================="
 
 # 1. Compile Java Backend
 echo ""
-echo "[1/3] Compiling Java Core & API Server..."
-javac -d . finguard/api/*.java finguard/*.java finguard/*/*.java
+echo "[1/3] Compiling Java Core & API Server with MySQL JDBC Driver..."
+javac -cp "lib/mysql-connector-j.jar:." -d . finguard/db/*.java finguard/api/*.java finguard/*.java finguard/*/*.java
 if [ $? -ne 0 ]; then
   echo "❌ Java compilation failed. Please fix any syntax issues."
   exit 1
@@ -27,7 +27,7 @@ if lsof -i :8080 > /dev/null 2>&1; then
   echo "✔ Java Server is already active on http://localhost:8080"
 else
   echo "🚀 Starting Java API Server on http://localhost:8080..."
-  java finguard.api.ApiMain 8080 > java_server.log 2>&1 &
+  java -cp "lib/mysql-connector-j.jar:." finguard.api.ApiMain 8080 > java_server.log 2>&1 &
   JAVA_PID=$!
   sleep 2
   echo "✔ Java Server started (PID: $JAVA_PID). Logs: java_server.log"

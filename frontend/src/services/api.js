@@ -117,4 +117,8 @@ export const api = {
 
   runFreezeLab: () =>
     request('/labs/freeze', { method: 'POST' }),
+
+  // Database Status
+  getDbStatus: () =>
+    request('/db/status'),
 };
