@@ -36,7 +36,9 @@ public class Customer {
     }
 
     public boolean checkPin(String entered) {
-        return (pin != null && pin.equals(entered)) || (password != null && password.equals(entered));
+        if (entered == null) return false;
+        String e = entered.trim();
+        return (pin != null && pin.equalsIgnoreCase(e)) || (password != null && password.equalsIgnoreCase(e));
     }
 
     public boolean checkPassword(String entered) {
