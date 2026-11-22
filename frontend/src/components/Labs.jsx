@@ -114,7 +114,7 @@ export default function Labs() {
   return (
     <div className="max-w-6xl mx-auto space-y-8 font-sans">
       
-      {/* Top Professional Header Banner */}
+      {/* Top Header Banner */}
       <div className="relative overflow-hidden rounded-3xl p-6 sm:p-8 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white border border-slate-800 shadow-2xl">
         <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
         
@@ -126,10 +126,10 @@ export default function Labs() {
               </span>
               <div>
                 <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight">
-                  Security & Protection Center
+                  {t('stressLabTitle')}
                 </h1>
                 <p className="text-xs text-slate-300">
-                  Continuous Automated Ledger Audits, Fraud Quarantine & Enterprise Safety Heuristics
+                  {t('stressLabSubtitle')}
                 </p>
               </div>
             </div>
@@ -139,190 +139,122 @@ export default function Labs() {
             <div className="px-4 py-2.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md flex items-center gap-2.5">
               <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 animate-pulse" />
               <div className="text-left">
-                <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Protection Status</div>
-                <div className="text-xs font-bold text-white">100% Guarded & Active</div>
+                <div className="text-[10px] text-slate-400 font-mono leading-none">Security Core</div>
+                <div className="text-xs font-bold text-white mt-0.5">Continuous Guard</div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Security Health Metrics */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 shadow-sm">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Ledger Integrity</span>
-            <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-          </div>
-          <div className="text-lg font-bold text-slate-900 dark:text-white">0.00% Drift</div>
-          <div className="text-[10px] text-slate-400 mt-0.5">ACID atomic isolation verified</div>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 shadow-sm">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Encryption Level</span>
-            <Lock className="h-4 w-4 text-cyan-500" />
-          </div>
-          <div className="text-lg font-bold text-slate-900 dark:text-white">AES-256 GCM</div>
-          <div className="text-[10px] text-slate-400 mt-0.5">Bank-grade data in transit</div>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 shadow-sm">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Fraud Quarantine</span>
-            <Activity className="h-4 w-4 text-amber-500" />
-          </div>
-          <div className="text-lg font-bold text-slate-900 dark:text-white">Active Shield</div>
-          <div className="text-[10px] text-slate-400 mt-0.5">Automated cooldown enabled</div>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 shadow-sm">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Lock Response</span>
-            <Zap className="h-4 w-4 text-indigo-500" />
-          </div>
-          <div className="text-lg font-bold text-slate-900 dark:text-white">&lt; 2ms SLA</div>
-          <div className="text-[10px] text-slate-400 mt-0.5">Instant emergency freeze</div>
-        </div>
-      </div>
-
-      {/* Interactive Automated Security Verification */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
+      {/* Verification Actions Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        
+        {/* Race Condition Test */}
+        <div className="p-6 rounded-3xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 shadow-md flex flex-col justify-between space-y-4">
           <div>
-            <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <FileCheck className="h-4 w-4 text-cyan-500" />
-              Automated Bank Verification Audits
-            </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Run real-time integrity checks to confirm ledger safety and fraud protection
+            <div className="flex items-center justify-between mb-3">
+              <div className="p-2.5 rounded-xl bg-cyan-50 dark:bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-200 dark:border-cyan-500/20">
+                <Activity className="h-5 w-5" />
+              </div>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-50 dark:bg-cyan-500/10 text-cyan-600 dark:text-cyan-300">
+                Concurrent Locks
+              </span>
+            </div>
+            <h3 className="font-bold text-slate-900 dark:text-white text-base">
+              Atomic Race Condition Test
+            </h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+              Dispatches parallel threads attempting simultaneous debits against the same account to verify zero balance distortion.
             </p>
           </div>
+
+          <button
+            onClick={() => runVerification('race', 'Atomic Race Condition Test')}
+            disabled={runningLab !== null}
+            className="w-full py-2.5 px-4 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs uppercase tracking-wider transition shadow-md shadow-cyan-500/20 disabled:opacity-50 cursor-pointer"
+          >
+            {runningLab === 'race' ? t('runningTest') : t('runRaceTest')}
+          </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          
-          {/* Card 1 */}
-          <div className="p-6 rounded-3xl bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800 flex flex-col justify-between shadow-lg hover:shadow-xl transition-all">
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-cyan-50 dark:bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-500/20">
-                  Integrity Audit
-                </span>
-                <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                  <Check className="h-3 w-3" /> Ready
-                </span>
+        {/* Priority Dispatch Test */}
+        <div className="p-6 rounded-3xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 shadow-md flex flex-col justify-between space-y-4">
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <div className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20">
+                <Zap className="h-5 w-5" />
               </div>
-              <h3 className="font-bold text-slate-900 dark:text-white text-base mb-1.5">
-                Atomic Ledger Reconciliation
-              </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mb-5 leading-relaxed">
-                Executes simultaneous cross-account transactions to verify that debits and credits maintain mathematical parity with zero balance drift.
-              </p>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-300">
+                Smart Queue
+              </span>
             </div>
-
-            <button
-              onClick={() => runVerification('race', 'Atomic Ledger Reconciliation')}
-              disabled={runningLab !== null}
-              className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition shadow-md shadow-cyan-500/10 disabled:opacity-50"
-            >
-              {runningLab === 'race' ? (
-                <div className="h-4 w-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <ShieldCheck className="h-4 w-4" />
-              )}
-              <span>Run Ledger Audit</span>
-            </button>
+            <h3 className="font-bold text-slate-900 dark:text-white text-base">
+              Priority Settlement Test
+            </h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+              Simulates concurrent payroll, essential utility payments, and retail transfers to ensure emergency items settle first.
+            </p>
           </div>
 
-          {/* Card 2 */}
-          <div className="p-6 rounded-3xl bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800 flex flex-col justify-between shadow-lg hover:shadow-xl transition-all">
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/20">
-                  Priority Queue
-                </span>
-                <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                  <Check className="h-3 w-3" /> Ready
-                </span>
-              </div>
-              <h3 className="font-bold text-slate-900 dark:text-white text-base mb-1.5">
-                Priority Obligation Clearing
-              </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mb-5 leading-relaxed">
-                Validates intelligent transaction dispatch, ensuring salary payments and urgent utility obligations clear before standard retail transfers.
-              </p>
-            </div>
-
-            <button
-              onClick={() => runVerification('priority', 'Priority Settlement Clearing')}
-              disabled={runningLab !== null}
-              className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition shadow-md shadow-indigo-500/10 disabled:opacity-50"
-            >
-              {runningLab === 'priority' ? (
-                <div className="h-4 w-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <Zap className="h-4 w-4" />
-              )}
-              <span>Verify Priority Clearing</span>
-            </button>
-          </div>
-
-          {/* Card 3 */}
-          <div className="p-6 rounded-3xl bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800 flex flex-col justify-between shadow-lg hover:shadow-xl transition-all">
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-purple-50 dark:bg-purple-500/10 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-500/20">
-                  Fraud Lockdown
-                </span>
-                <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                  <Check className="h-3 w-3" /> Ready
-                </span>
-              </div>
-              <h3 className="font-bold text-slate-900 dark:text-white text-base mb-1.5">
-                Emergency Circuit Breaker
-              </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mb-5 leading-relaxed">
-                Tests zero-latency account locking under competing requests, verifying that unauthorized debits are immediately intercepted and blocked.
-              </p>
-            </div>
-
-            <button
-              onClick={() => runVerification('freeze', 'Emergency Circuit Breaker')}
-              disabled={runningLab !== null}
-              className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-400 hover:to-pink-500 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition shadow-md shadow-purple-500/10 disabled:opacity-50"
-            >
-              {runningLab === 'freeze' ? (
-                <div className="h-4 w-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <Lock className="h-4 w-4" />
-              )}
-              <span>Test Lockdown Shield</span>
-            </button>
-          </div>
-
+          <button
+            onClick={() => runVerification('priority', 'Priority Settlement Test')}
+            disabled={runningLab !== null}
+            className="w-full py-2.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs uppercase tracking-wider transition shadow-md shadow-amber-500/20 disabled:opacity-50 cursor-pointer"
+          >
+            {runningLab === 'priority' ? t('runningTest') : t('runPriorityTest')}
+          </button>
         </div>
+
+        {/* Account Lock Intercept Test */}
+        <div className="p-6 rounded-3xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 shadow-md flex flex-col justify-between space-y-4">
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <div className="p-2.5 rounded-xl bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-500/20">
+                <Lock className="h-5 w-5" />
+              </div>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-300">
+                Interception
+              </span>
+            </div>
+            <h3 className="font-bold text-slate-900 dark:text-white text-base">
+              Lock Intercept Test
+            </h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+              Validates that an account with active emergency freeze rejects 100% of debit attempts while preserving funds.
+            </p>
+          </div>
+
+          <button
+            onClick={() => runVerification('freeze', 'Lock Intercept Test')}
+            disabled={runningLab !== null}
+            className="w-full py-2.5 px-4 rounded-xl bg-rose-500 hover:bg-rose-400 text-white font-bold text-xs uppercase tracking-wider transition shadow-md shadow-rose-500/20 disabled:opacity-50 cursor-pointer"
+          >
+            {runningLab === 'freeze' ? t('runningTest') : t('runLockIntercept')}
+          </button>
+        </div>
+
       </div>
 
-      {/* Live Security Activity & Audit Feed */}
-      <div className="p-6 rounded-3xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 shadow-xl space-y-4">
+      {/* Real-time Security Audit Log */}
+      <div className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 shadow-xl space-y-4">
         <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
           <div>
             <h3 className="font-bold text-slate-900 dark:text-white text-sm flex items-center gap-2">
               <Activity className="h-4 w-4 text-emerald-500" />
-              Real-Time Security Audit Ledger
+              {t('realTimeAuditLedger')}
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Live automated security events logged by the FinGuard banking safety engine
+              {t('auditLedgerSubtitle')}
             </p>
           </div>
 
           <button
             onClick={() => setShowRawOutput(!showRawOutput)}
-            className="text-[11px] font-semibold text-slate-500 hover:text-cyan-600 dark:hover:text-cyan-400 flex items-center gap-1 transition"
+            className="text-[11px] font-semibold text-slate-500 hover:text-cyan-600 dark:hover:text-cyan-400 flex items-center gap-1 transition cursor-pointer"
           >
             <Terminal className="h-3.5 w-3.5" />
-            <span>{showRawOutput ? 'Hide Telemetry Log' : 'View Telemetry Log'}</span>
+            <span>{showRawOutput ? t('hideTelemetry') : t('showTelemetry')}</span>
           </button>
         </div>
 
@@ -374,7 +306,7 @@ export default function Labs() {
       <div className="space-y-4">
         <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
           <Server className="h-4 w-4 text-cyan-500" />
-          Enterprise Safety Infrastructure
+          {t('enterpriseSafetyInfra')}
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

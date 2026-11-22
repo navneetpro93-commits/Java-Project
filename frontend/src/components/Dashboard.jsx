@@ -235,7 +235,7 @@ export default function Dashboard({
 
                   {/* Holder Name */}
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                    Holder: <span className="text-slate-800 dark:text-slate-200 font-semibold">{account.holder}</span>
+                    {t('holder')}: <span className="text-slate-800 dark:text-slate-200 font-semibold">{account.holder}</span>
                   </p>
 
                   {/* Balance */}

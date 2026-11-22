@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { UserPlus, CreditCard, X, AlertCircle } from 'lucide-react';
 import { api } from '../services/api';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function CreateAccountModal({ 
   customers, 
@@ -8,6 +9,7 @@ export default function CreateAccountModal({
   onClose, 
   onSuccess 
 }) {
+  const { t } = useLanguage();
   const [tab, setTab] = useState('account'); // 'account' or 'customer'
   
   // Customer form
@@ -25,7 +27,7 @@ export default function CreateAccountModal({
   const handleCreateCustomer = async (e) => {
     e.preventDefault();
     if (!custName.trim() || !custPin.trim()) {
-      setError('Name and PIN are required.');
+      setError(t('namePinRequired'));
       return;
     }
     setLoading(true);
@@ -44,11 +46,11 @@ export default function CreateAccountModal({
   const handleCreateAccount = async (e) => {
     e.preventDefault();
     if (!targetCustId) {
-      setError('Please select a customer profile.');
+      setError(t('selectCustomerRequired'));
       return;
     }
     if (!openingBalance || Number(openingBalance) < 0) {
-      setError('Please enter a valid opening deposit.');
+      setError(t('validDepositRequired'));
       return;
     }
     setLoading(true);
@@ -65,13 +67,13 @@ export default function CreateAccountModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fade-in">
-      <div className="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-2xl relative transition-colors">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/75 backdrop-blur-sm animate-fade-in overflow-y-auto">
+      <div className="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-2xl relative transition-colors my-auto">
         
-        {/* Close */}
+        {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 rounded-lg"
+          className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 rounded-lg cursor-pointer"
         >
           <X className="h-5 w-5" />
         </button>
@@ -80,25 +82,25 @@ export default function CreateAccountModal({
         <div className="flex border-b border-slate-200 dark:border-slate-800 pb-3 mb-5 gap-2">
           <button
             onClick={() => { setTab('account'); setError(null); }}
-            className={`flex items-center gap-2 pb-2 text-xs font-bold border-b-2 transition ${
+            className={`flex items-center gap-2 pb-2 text-xs font-bold border-b-2 transition cursor-pointer ${
               tab === 'account'
                 ? 'border-cyan-500 text-cyan-600 dark:text-cyan-300'
                 : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'
             }`}
           >
             <CreditCard className="h-4 w-4" />
-            Open Bank Account
+            {t('modalOpenAccount')}
           </button>
           <button
             onClick={() => { setTab('customer'); setError(null); }}
-            className={`flex items-center gap-2 pb-2 text-xs font-bold border-b-2 transition ${
+            className={`flex items-center gap-2 pb-2 text-xs font-bold border-b-2 transition cursor-pointer ${
               tab === 'customer'
                 ? 'border-cyan-500 text-cyan-600 dark:text-cyan-300'
                 : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'
             }`}
           >
             <UserPlus className="h-4 w-4" />
-            New Customer Profile
+            {t('modalNewProfile')}
           </button>
         </div>
 
@@ -113,7 +115,7 @@ export default function CreateAccountModal({
           <form onSubmit={handleCreateAccount} className="space-y-4">
             <div>
               <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                Account Owner
+                {t('accountOwner')}
               </label>
               <select
                 value={targetCustId}
@@ -130,39 +132,39 @@ export default function CreateAccountModal({
 
             <div>
               <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                Account Type
+                {t('accountType')}
               </label>
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
                   onClick={() => setAccountType('SAVINGS')}
-                  className={`p-3 rounded-xl border text-left text-xs transition ${
+                  className={`p-3 rounded-xl border text-left text-xs transition cursor-pointer ${
                     accountType === 'SAVINGS'
                       ? 'bg-cyan-50 dark:bg-cyan-500/10 border-cyan-300 dark:border-cyan-500/40 text-cyan-700 dark:text-cyan-300'
                       : 'bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400'
                   }`}
                 >
-                  <div className="font-bold">SAVINGS</div>
-                  <div className="text-[10px] text-slate-400 mt-0.5">Vault savings & 4.5% yield</div>
+                  <div className="font-bold">{t('savingsAccount')}</div>
+                  <div className="text-[10px] text-slate-400 mt-0.5">{t('savingsDesc')}</div>
                 </button>
                 <button
                   type="button"
                   onClick={() => setAccountType('CURRENT')}
-                  className={`p-3 rounded-xl border text-left text-xs transition ${
+                  className={`p-3 rounded-xl border text-left text-xs transition cursor-pointer ${
                     accountType === 'CURRENT'
                       ? 'bg-indigo-50 dark:bg-indigo-500/10 border-indigo-300 dark:border-indigo-500/40 text-indigo-700 dark:text-indigo-300'
                       : 'bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400'
                   }`}
                 >
-                  <div className="font-bold">CURRENT</div>
-                  <div className="text-[10px] text-slate-400 mt-0.5">₹5,000 Overdraft facility</div>
+                  <div className="font-bold">{t('currentAccount')}</div>
+                  <div className="text-[10px] text-slate-400 mt-0.5">{t('currentDesc')}</div>
                 </button>
               </div>
             </div>
 
             <div>
               <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                Initial Opening Balance (₹)
+                {t('initialDeposit')}
               </label>
               <input
                 type="number"
@@ -177,9 +179,9 @@ export default function CreateAccountModal({
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 px-4 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs uppercase tracking-wider transition shadow-lg shadow-cyan-500/20 disabled:opacity-50"
+                className="w-full py-3 px-4 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs uppercase tracking-wider transition shadow-lg shadow-cyan-500/20 disabled:opacity-50 cursor-pointer"
               >
-                {loading ? 'Creating Account...' : 'Open Account'}
+                {loading ? t('processing') : t('createAccountSubmit')}
               </button>
             </div>
           </form>
@@ -187,11 +189,11 @@ export default function CreateAccountModal({
           <form onSubmit={handleCreateCustomer} className="space-y-4">
             <div>
               <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                Customer Full Name
+                {t('customerFullName')}
               </label>
               <input
                 type="text"
-                placeholder="e.g. Priya Sharma"
+                placeholder="e.g. Navneet Sharma"
                 value={custName}
                 onChange={(e) => setCustName(e.target.value)}
                 className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-cyan-500 font-medium"
@@ -200,7 +202,7 @@ export default function CreateAccountModal({
 
             <div>
               <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                Security PIN (4 digits)
+                {t('securityPinFour')}
               </label>
               <input
                 type="password"
@@ -216,9 +218,9 @@ export default function CreateAccountModal({
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs uppercase tracking-wider transition shadow-lg shadow-indigo-500/20 disabled:opacity-50"
+                className="w-full py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs uppercase tracking-wider transition shadow-lg shadow-indigo-500/20 disabled:opacity-50 cursor-pointer"
               >
-                {loading ? 'Registering...' : 'Register Profile'}
+                {loading ? t('processing') : t('registerProfileSubmit')}
               </button>
             </div>
           </form>

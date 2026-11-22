@@ -55,7 +55,7 @@ export default function CooldownVault({
               {t('vaultTitle')}
             </h2>
             <span className="text-xs px-2.5 py-0.5 rounded-full font-mono font-bold bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20">
-              {heldList.length} Pending
+              {heldList.length} {t('pendingBadge')}
             </span>
           </div>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
@@ -65,10 +65,10 @@ export default function CooldownVault({
 
         <button
           onClick={onRefresh}
-          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-xs font-semibold shadow-sm transition"
+          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-xs font-semibold shadow-sm transition cursor-pointer"
         >
           <RefreshCw className="h-3.5 w-3.5 text-cyan-500" />
-          Sync Queue
+          <span>{t('syncQueue')}</span>
         </button>
       </div>
 
@@ -89,26 +89,26 @@ export default function CooldownVault({
 
       {/* Queue Table */}
       {heldList.length === 0 ? (
-        <div className="text-center py-20 px-4 rounded-3xl bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 shadow-md">
+        <div className="text-center py-16 sm:py-20 px-4 rounded-3xl bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 shadow-md">
           <ShieldCheck className="h-12 w-12 text-emerald-500/60 mx-auto mb-3" />
           <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">{t('holdQueueClear')}</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto mt-1">
-            All cleared transactions have been settled. Any future transactions exceeding threshold amounts will appear here with an instant cancel option.
+          <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto mt-1 leading-relaxed">
+            {t('holdQueueClearDesc')}
           </p>
         </div>
       ) : (
         <div className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-xl">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+            <table className="w-full text-left text-xs min-w-[640px]">
               <thead className="bg-slate-50 dark:bg-slate-950/80 border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider">
                 <tr>
-                  <th className="py-3.5 px-4">Txn ID</th>
-                  <th className="py-3.5 px-4">From Account</th>
-                  <th className="py-3.5 px-4">Recipient</th>
-                  <th className="py-3.5 px-4">Amount</th>
-                  <th className="py-3.5 px-4">Category / Note</th>
-                  <th className="py-3.5 px-4">Release Timer</th>
-                  <th className="py-3.5 px-4 text-right">Action</th>
+                  <th className="py-3.5 px-4">{t('txnId')}</th>
+                  <th className="py-3.5 px-4">{t('fromAccountCol')}</th>
+                  <th className="py-3.5 px-4">{t('recipientCol')}</th>
+                  <th className="py-3.5 px-4">{t('amountCol')}</th>
+                  <th className="py-3.5 px-4">{t('noteCol')}</th>
+                  <th className="py-3.5 px-4">{t('timerCol')}</th>
+                  <th className="py-3.5 px-4 text-right">{t('actionCol')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 font-mono">
@@ -135,7 +135,7 @@ export default function CooldownVault({
                         <div className="flex items-center gap-1.5">
                           <Clock className="h-3.5 w-3.5 text-amber-500 animate-pulse" />
                           <span className="font-semibold text-amber-600 dark:text-amber-300">
-                            {ticksLeft > 0 ? `${ticksLeft} ${t('ticksRemaining')}` : 'Releasing now'}
+                            {ticksLeft > 0 ? `${ticksLeft} ${t('ticksRemaining')}` : t('releasingNow')}
                           </span>
                           <span className="text-[10px] text-slate-400 font-sans">
                             (Tick #{tx.readyTick})
@@ -146,10 +146,10 @@ export default function CooldownVault({
                         <button
                           onClick={() => handleCancel(tx.id)}
                           disabled={cancellingId === tx.id}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-500/10 hover:bg-rose-100 dark:hover:bg-rose-500/20 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-500/30 font-sans text-xs font-semibold transition disabled:opacity-50"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-500/10 hover:bg-rose-100 dark:hover:bg-rose-500/20 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-500/30 font-sans text-xs font-semibold transition disabled:opacity-50 cursor-pointer"
                         >
                           <XCircle className="h-3.5 w-3.5" />
-                          {cancellingId === tx.id ? 'Recalling...' : t('cancelAndRecall')}
+                          <span>{cancellingId === tx.id ? t('cancelling') : t('cancelAndRecall')}</span>
                         </button>
                       </td>
                     </tr>
@@ -165,10 +165,10 @@ export default function CooldownVault({
       <div className="p-5 rounded-2xl bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400 space-y-2 shadow-sm">
         <div className="flex items-center gap-2 font-bold text-slate-800 dark:text-slate-200">
           <Info className="h-4 w-4 text-cyan-500" />
-          How the FinGuard Safety Vault Protects Your Money
+          <span>{t('vaultExplainerTitle')}</span>
         </div>
-        <p>
-          Transfers with elevated risk parameters or transactions exceeding safety thresholds are securely quarantined in the Cooldown Vault. During this holding period, debited funds are guaranteed by atomic reservation and can be recalled instantly if unauthorized.
+        <p className="leading-relaxed">
+          {t('vaultExplainerDesc')}
         </p>
       </div>
 

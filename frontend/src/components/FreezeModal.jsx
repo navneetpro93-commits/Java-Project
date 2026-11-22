@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { Lock, Unlock, X, AlertTriangle, ShieldCheck } from 'lucide-react';
+import { Lock, Unlock, X, AlertTriangle } from 'lucide-react';
 import { api } from '../services/api';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function FreezeModal({ account, onClose, onSuccess }) {
+  const { t } = useLanguage();
   const isFrozen = account?.frozen;
   const [pin, setPin] = useState('');
   const [phrase, setPhrase] = useState('');
@@ -40,13 +42,13 @@ export default function FreezeModal({ account, onClose, onSuccess }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fade-in">
-      <div className="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-2xl relative transition-colors">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/75 backdrop-blur-sm animate-fade-in overflow-y-auto">
+      <div className="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-2xl relative transition-colors my-auto">
         
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 rounded-lg"
+          className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 rounded-lg cursor-pointer"
         >
           <X className="h-5 w-5" />
         </button>
@@ -62,7 +64,7 @@ export default function FreezeModal({ account, onClose, onSuccess }) {
           </div>
           <div>
             <h3 className="font-bold text-slate-900 dark:text-white text-base">
-              {isFrozen ? 'Restore / Unlock Account' : 'Emergency Lock Account'}
+              {isFrozen ? t('restoreUnlockTitle') : t('emergencyLockTitle')}
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">
               {account.number} ({account.holder})
@@ -76,15 +78,9 @@ export default function FreezeModal({ account, onClose, onSuccess }) {
             ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-500/30 text-emerald-800 dark:text-emerald-300'
             : 'bg-rose-50 dark:bg-rose-950/20 border-rose-200 dark:border-rose-500/30 text-rose-800 dark:text-rose-300'
         }`}>
-          {isFrozen ? (
-            <p>
-              Unlocking requires your security PIN and typing <strong>UNFREEZE</strong>. This restores normal transfer and withdrawal capabilities.
-            </p>
-          ) : (
-            <p>
-              Locking immediately halts all outgoing transactions to prevent unauthorized access. Existing balances remain completely safe.
-            </p>
-          )}
+          <p>
+            {isFrozen ? t('unlockExplainer') : t('lockExplainer')}
+          </p>
         </div>
 
         {error && (
@@ -97,7 +93,7 @@ export default function FreezeModal({ account, onClose, onSuccess }) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-              Account PIN
+              {t('accountPinLabel')}
             </label>
             <input
               type="password"
@@ -111,7 +107,7 @@ export default function FreezeModal({ account, onClose, onSuccess }) {
           {isFrozen && (
             <div>
               <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                Type <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">UNFREEZE</span> to confirm
+                {t('typeUnfreezeConfirm')}
               </label>
               <input
                 type="text"
@@ -127,20 +123,20 @@ export default function FreezeModal({ account, onClose, onSuccess }) {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-2.5 px-4 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold transition"
+              className="flex-1 py-2.5 px-4 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold transition cursor-pointer"
             >
-              Cancel
+              {t('cancelBtn')}
             </button>
             <button
               type="submit"
               disabled={loading}
-              className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition ${
+              className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition cursor-pointer ${
                 isFrozen
                   ? 'bg-emerald-500 hover:bg-emerald-400 text-slate-950'
                   : 'bg-rose-500 hover:bg-rose-400 text-white'
               }`}
             >
-              {loading ? 'Processing...' : (isFrozen ? 'Confirm Unlock' : 'Lock Account')}
+              {loading ? t('processing') : (isFrozen ? t('confirmUnlockBtn') : t('confirmLockBtn'))}
             </button>
           </div>
         </form>

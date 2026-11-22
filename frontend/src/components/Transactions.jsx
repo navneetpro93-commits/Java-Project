@@ -78,29 +78,39 @@ export default function Transactions({
     setResult(null);
 
     try {
-      const response = await api.move({
+      const res = await api.move({
         type,
-        fromAccount: type === 'DEPOSIT' || type === 'SALARY' ? '' : fromAccount,
-        toAccount: type === 'WITHDRAW' ? '' : (type === 'DEPOSIT' || type === 'SALARY' ? fromAccount : toAccount),
+        fromAccount: (type === 'DEPOSIT' || type === 'SALARY') ? '' : fromAccount,
+        toAccount: (type === 'WITHDRAW') ? '' : (type === 'DEPOSIT' ? fromAccount : toAccount),
         amount: Number(amount),
-        purpose: purpose || 'General Banking',
+        purpose: purpose || `${type} Payment`
       });
 
-      setResult(response);
-      if (onSuccess) onSuccess();
+      setResult(res);
+      if (res.ok && onSuccess) {
+        onSuccess();
+      }
     } catch (err) {
-      setError(err.message || 'Transaction could not be completed');
+      setError(err.message || 'Transaction submission failed');
     } finally {
       setLoading(false);
     }
   };
 
-  const selectedFromObj = accounts.find(a => a.number === fromAccount);
   const isHighValue = Number(amount) >= 25000;
-  const isFrozen = selectedFromObj?.frozen;
+  const currentFromAccObj = accounts.find(a => a.number === fromAccount);
+  const isFrozen = currentFromAccObj?.frozen;
+
+  const typeTabs = [
+    { id: 'TRANSFER', label: t('typeTransfer'), icon: ArrowLeftRight },
+    { id: 'BILL', label: t('typeBill'), icon: FileText },
+    { id: 'SALARY', label: t('typeSalary'), icon: Zap },
+    { id: 'DEPOSIT', label: t('typeDeposit'), icon: ArrowDownLeft },
+    { id: 'WITHDRAW', label: t('typeWithdraw'), icon: ArrowUpRight },
+  ];
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-5xl mx-auto space-y-6">
       
       {/* Header */}
       <div>
@@ -115,151 +125,136 @@ export default function Transactions({
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        {/* Main Form (7 cols) */}
-        <div className="lg:col-span-7 bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xl transition-colors">
+        {/* Form Panel (7 cols) */}
+        <div className="lg:col-span-7 bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl transition-colors">
           
-          {/* Operation Type Selector */}
-          <div className="flex flex-wrap gap-2 mb-6">
-            {[
-              { id: 'TRANSFER', label: 'Transfer', icon: ArrowLeftRight },
-              { id: 'DEPOSIT', label: 'Deposit', icon: ArrowDownLeft },
-              { id: 'WITHDRAW', label: 'Withdraw', icon: ArrowUpRight },
-              { id: 'SALARY', label: 'Salary', icon: Zap },
-              { id: 'BILL', label: 'Bill Pay', icon: FileText },
-            ].map((item) => {
-              const Icon = item.icon;
-              const active = type === item.id;
+          {/* Action Tabs */}
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5 p-1 rounded-2xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 mb-5">
+            {typeTabs.map(tab => {
+              const Icon = tab.icon;
+              const active = type === tab.id;
               return (
                 <button
-                  key={item.id}
+                  key={tab.id}
                   type="button"
-                  onClick={() => handleTypeChange(item.id)}
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition ${
+                  onClick={() => handleTypeChange(tab.id)}
+                  className={`flex flex-col sm:flex-row items-center justify-center gap-1.5 py-2 px-1 rounded-xl text-xs font-bold transition cursor-pointer ${
                     active
-                      ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/20'
-                      : 'bg-slate-100 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800'
+                      ? 'bg-white dark:bg-slate-800 text-cyan-600 dark:text-cyan-400 shadow-md border border-slate-200 dark:border-slate-700'
+                      : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
                   }`}
                 >
                   <Icon className="h-3.5 w-3.5" />
-                  {item.label}
+                  <span className="text-[11px] truncate">{tab.label}</span>
                 </button>
               );
             })}
           </div>
 
+          {/* Account Locked Warning */}
+          {isFrozen && type !== 'DEPOSIT' && (
+            <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/30 text-rose-700 dark:text-rose-300 text-xs mb-4 flex items-center gap-2">
+              <ShieldAlert className="h-4 w-4 text-rose-500 flex-shrink-0" />
+              <span>This account is currently locked. Debits and transfers are blocked until unlocked.</span>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4">
             
-            {/* Account Selector(s) */}
-            {(type === 'TRANSFER' || type === 'WITHDRAW' || type === 'BILL') && (
+            {/* Sender / From Account */}
+            {type !== 'SALARY' && (
               <div>
-                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                  {t('debitAccount')}
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  {type === 'DEPOSIT' ? t('creditAccount') : t('debitAccount')}
                 </label>
                 <select
                   value={fromAccount}
                   onChange={(e) => setFromAccount(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-cyan-500 font-mono"
+                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white font-mono focus:outline-none focus:ring-1 focus:ring-cyan-500"
                 >
-                  {accounts.map(acc => (
-                    <option key={acc.number} value={acc.number}>
-                      {acc.number} - {acc.holder} ({acc.type}) [Bal: ₹{acc.balance.toLocaleString('en-IN')}] {acc.frozen ? '⛔ LOCKED' : ''}
-                    </option>
-                  ))}
-                </select>
-                {isFrozen && (
-                  <p className="text-[11px] text-rose-500 mt-1 flex items-center gap-1">
-                    <ShieldAlert className="h-3.5 w-3.5" />
-                    Account is locked. Unlock it in Overview to authorize debits.
-                  </p>
-                )}
-              </div>
-            )}
-
-            {(type === 'DEPOSIT' || type === 'SALARY') && (
-              <div>
-                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                  {t('creditAccount')}
-                </label>
-                <select
-                  value={fromAccount}
-                  onChange={(e) => setFromAccount(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-cyan-500 font-mono"
-                >
-                  {accounts.map(acc => (
-                    <option key={acc.number} value={acc.number}>
-                      {acc.number} - {acc.holder} ({acc.type}) [Bal: ₹{acc.balance.toLocaleString('en-IN')}]
+                  {senderAccounts.map((a) => (
+                    <option key={a.number} value={a.number}>
+                      {a.number} - {a.holder} (Bal: ₹{a.balance.toLocaleString('en-IN')}) {a.frozen ? '🔒 [LOCKED]' : ''}
                     </option>
                   ))}
                 </select>
               </div>
             )}
 
-            {type === 'TRANSFER' && (
+            {/* Recipient / Beneficiary Account */}
+            {(type === 'TRANSFER' || type === 'BILL' || type === 'SALARY') && (
               <div>
-                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                   {t('beneficiaryAccount')}
                 </label>
-                <select
-                  value={toAccount}
-                  onChange={(e) => setToAccount(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-cyan-500 font-mono"
-                >
-                  <option value="">Select recipient account...</option>
-                  {accounts
-                    .filter(a => a.number !== fromAccount)
-                    .map(acc => (
-                      <option key={acc.number} value={acc.number}>
-                        {acc.number} - {acc.holder} ({acc.type})
-                      </option>
+                <div className="relative">
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. FG1002 or Beneficiary A/C"
+                    value={toAccount}
+                    onChange={(e) => setToAccount(e.target.value)}
+                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white font-mono focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                  />
+                  {/* Quick Select Beneficiaries */}
+                  <div className="flex flex-wrap gap-1.5 mt-1.5">
+                    {accounts.filter(a => a.number !== fromAccount).slice(0, 3).map((acc) => (
+                      <button
+                        key={acc.number}
+                        type="button"
+                        onClick={() => setToAccount(acc.number)}
+                        className="text-[10px] px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-cyan-600 font-mono transition cursor-pointer"
+                      >
+                        + {acc.holder} ({acc.masked})
+                      </button>
                     ))}
-                </select>
+                  </div>
+                </div>
               </div>
             )}
 
-            {/* Amount */}
+            {/* Amount & Preset Buttons */}
             <div>
-              <div className="flex justify-between items-center mb-1.5">
-                <label className="text-xs font-medium text-slate-700 dark:text-slate-300">{t('amount')} (₹)</label>
-                {selectedFromObj && (type === 'TRANSFER' || type === 'WITHDRAW' || type === 'BILL') && (
-                  <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
-                    Available: ₹{selectedFromObj.available.toLocaleString('en-IN')}
-                  </span>
-                )}
-              </div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                {t('amount')}
+              </label>
               <div className="relative">
-                <span className="absolute left-3.5 top-2.5 text-slate-400 font-bold text-sm">₹</span>
+                <span className="absolute left-3.5 top-2.5 text-slate-400 font-bold">₹</span>
                 <input
                   type="number"
-                  placeholder="0.00"
+                  required
+                  min="1"
+                  step="any"
+                  placeholder="5000"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl pl-8 pr-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 font-mono font-bold focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl pl-8 pr-3.5 py-2.5 text-xs text-slate-900 dark:text-white font-mono font-bold text-sm focus:outline-none focus:ring-1 focus:ring-cyan-500"
                 />
               </div>
 
-              {/* Preset Chips */}
+              {/* Preset Amount Pills */}
               <div className="flex flex-wrap gap-1.5 mt-2">
-                {presetAmounts.map((p) => (
+                {presetAmounts.map((preset) => (
                   <button
-                    key={p}
+                    key={preset}
                     type="button"
-                    onClick={() => setAmount(String(p))}
-                    className="text-[11px] px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition font-mono font-medium"
+                    onClick={() => setAmount(preset.toString())}
+                    className="text-[10px] font-mono px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-cyan-50 dark:hover:bg-cyan-500/10 hover:text-cyan-600 transition cursor-pointer"
                   >
-                    +₹{p >= 1000 ? `${p/1000}k` : p}
+                    +₹{preset.toLocaleString('en-IN')}
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Purpose */}
+            {/* Purpose / Note */}
             <div>
-              <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                 {t('categoryNote')}
               </label>
               <input
                 type="text"
-                placeholder="e.g. Grocery, Electricity, Bill, Rent..."
+                placeholder="e.g. Grocery, Electricity, Rent"
                 value={purpose}
                 onChange={(e) => setPurpose(e.target.value)}
                 className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-cyan-500"
@@ -270,7 +265,7 @@ export default function Transactions({
                     key={qp}
                     type="button"
                     onClick={() => setPurpose(qp)}
-                    className="text-[10px] px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800/60 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition"
+                    className="text-[10px] px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800/60 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition cursor-pointer"
                   >
                     {qp}
                   </button>
@@ -297,17 +292,17 @@ export default function Transactions({
             <button
               type="submit"
               disabled={loading || isFrozen}
-              className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-slate-950 font-bold text-xs uppercase tracking-wider transition shadow-lg shadow-cyan-500/20 disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-slate-950 font-bold text-xs uppercase tracking-wider transition shadow-lg shadow-cyan-500/20 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
             >
               {loading ? (
                 <>
                   <div className="h-4 w-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
-                  {t('clearingTransaction')}
+                  <span>{t('clearingTransaction')}</span>
                 </>
               ) : (
                 <>
                   <Send className="h-4 w-4" />
-                  {t('authorize')} {type}
+                  <span>{t('authorize')} {type}</span>
                 </>
               )}
             </button>
@@ -320,7 +315,7 @@ export default function Transactions({
           
           {/* Result Card */}
           {result ? (
-            <div className={`p-6 rounded-3xl border shadow-xl ${
+            <div className={`p-5 sm:p-6 rounded-3xl border shadow-xl ${
               result.message.startsWith('SUCCESS')
                 ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-500/30'
                 : result.message.startsWith('HELD')
@@ -346,22 +341,22 @@ export default function Transactions({
               <p className="text-xs text-slate-700 dark:text-slate-200 font-mono mb-2">{result.message}</p>
             </div>
           ) : (
-            <div className="p-6 rounded-3xl bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 text-center shadow-md">
+            <div className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 text-center shadow-md">
               <Sparkles className="h-8 w-8 text-slate-400 dark:text-slate-600 mx-auto mb-2" />
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Authorize a transaction to view instant settlement audit logs and risk evaluation scores.
+                {t('initialIdleAudit')}
               </p>
             </div>
           )}
 
           {/* Real-time System Terminal */}
-          <div className="p-5 rounded-3xl bg-slate-950 border border-slate-800 shadow-xl">
+          <div className="p-4 sm:p-5 rounded-3xl bg-slate-950 border border-slate-800 shadow-xl">
             <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-800 text-xs">
               <span className="text-slate-400 font-mono flex items-center gap-1.5">
                 <Terminal className="h-3.5 w-3.5 text-cyan-400" />
-                Security Network Audit Log
+                {t('telemetryAuditLog')}
               </span>
-              <span className="text-[10px] text-slate-500 font-mono">Live Telemetry</span>
+              <span className="text-[10px] text-slate-500 font-mono">{t('telemetryLive')}</span>
             </div>
             <pre className="text-[11px] font-mono text-emerald-400 bg-slate-950/90 p-3 rounded-xl overflow-x-auto max-h-56 scrollbar-thin whitespace-pre-wrap">
               {result?.log || '// Transaction settlement engine active...\n// Waiting for transaction dispatch...'}
@@ -370,7 +365,7 @@ export default function Transactions({
 
           <div className="p-4 rounded-2xl bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400 flex items-center gap-2 shadow-sm">
             <ShieldCheck className="h-4 w-4 text-cyan-500 flex-shrink-0" />
-            <span>Deadlock-free atomic transaction locking ensures zero funds inconsistency.</span>
+            <span>{t('deadlockFreeAssurance')}</span>
           </div>
 
         </div>

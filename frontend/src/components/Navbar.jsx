@@ -66,7 +66,7 @@ export default function Navbar({
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-extrabold text-lg tracking-tight text-slate-900 dark:text-white">
-                  FinGuard
+                  {t('brandTitle')}
                 </span>
                 <span className="text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-600 dark:text-cyan-300 border border-cyan-500/20">
                   Bank Core
