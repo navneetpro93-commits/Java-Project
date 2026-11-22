@@ -2,7 +2,9 @@
 // Guarantees real persistence in local MySQL database (finguard_db).
 
 const PRIMARY_URL = import.meta.env.VITE_API_URL || '/api';
-const DIRECT_JAVA_URL = 'http://localhost:8080/api';
+const DIRECT_JAVA_URL = typeof window !== 'undefined' 
+  ? `http://${window.location.hostname}:8080/api`
+  : 'http://localhost:8080/api';
 
 async function request(path, options = {}) {
   const headers = {
