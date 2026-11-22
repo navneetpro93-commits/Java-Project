@@ -36,6 +36,14 @@ function MainApp() {
   const [transferType, setTransferType] = useState('TRANSFER');
   const [transferAccount, setTransferAccount] = useState('');
 
+  // Clear any legacy client fallback stores on load
+  useEffect(() => {
+    try {
+      localStorage.removeItem('finguard_local_store');
+      localStorage.removeItem('finguard_app_data');
+    } catch (e) {}
+  }, []);
+
   // Fetch full overview from API
   const refreshData = useCallback(async (isInitial = false) => {
     if (isInitial) setLoading(true);

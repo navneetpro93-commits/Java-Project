@@ -1,22 +1,18 @@
 import React, { useState } from 'react';
 import { 
   ShieldCheck, 
-  Clock, 
   Layers, 
   ArrowLeftRight, 
   Lock, 
   ReceiptText, 
   PieChart, 
   Target, 
-  Cpu, 
-  GraduationCap,
   LogOut, 
-  RefreshCw,
-  ChevronDown,
-  Sun,
-  Moon,
-  Globe,
-  Check
+  RefreshCw, 
+  ChevronDown, 
+  Sun, 
+  Moon, 
+  Check 
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -50,18 +46,20 @@ export default function Navbar({
     { id: 'statements', label: t('navLedger'), icon: ReceiptText },
     { id: 'spending', label: t('navSpending'), icon: PieChart },
     { id: 'challenges', label: t('navGoals'), icon: Target },
-    { id: 'labs', label: t('navStressLab'), icon: Cpu },
+    { id: 'labs', label: t('navStressLab'), icon: ShieldCheck },
   ];
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-950/85 backdrop-blur-md transition-colors duration-200">
+    <header className="sticky top-0 z-40 w-full border-b border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-950/90 backdrop-blur-md transition-colors duration-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* Main Header Row */}
         <div className="flex items-center justify-between h-16 gap-3">
           
-          {/* Logo & Brand */}
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-indigo-600 p-0.5 shadow-md shadow-cyan-500/20">
-              <div className="h-full w-full bg-white dark:bg-slate-950 rounded-[10px] flex items-center justify-center">
+          {/* Left: Brand Identity */}
+          <div className="flex items-center gap-3 flex-shrink-0">
+            <div className="h-10 w-10 rounded-2xl bg-gradient-to-tr from-cyan-500 to-indigo-600 p-0.5 shadow-md shadow-cyan-500/20">
+              <div className="h-full w-full bg-white dark:bg-slate-950 rounded-[14px] flex items-center justify-center">
                 <ShieldCheck className="h-5 w-5 text-cyan-500 dark:text-cyan-400" />
               </div>
             </div>
@@ -71,7 +69,7 @@ export default function Navbar({
                   FinGuard
                 </span>
                 <span className="text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-600 dark:text-cyan-300 border border-cyan-500/20">
-                  Secure Bank
+                  Bank Core
                 </span>
               </div>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 hidden sm:block">
@@ -80,12 +78,39 @@ export default function Navbar({
             </div>
           </div>
 
-          {/* Right Status & Customization Controls */}
-          <div className="flex items-center gap-2 sm:gap-2.5">
+          {/* Center (Desktop xl+): Single-Row Unified Navigation Bar */}
+          <nav className="hidden xl:flex items-center gap-1 bg-slate-100/80 dark:bg-slate-900/80 p-1.5 rounded-2xl border border-slate-200/70 dark:border-slate-800/70 shadow-inner">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const active = currentTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setCurrentTab(item.id)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    active
+                      ? 'bg-white dark:bg-slate-800 text-cyan-700 dark:text-cyan-300 shadow-sm border border-slate-200/50 dark:border-slate-700/50'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-white/50 dark:hover:bg-slate-800/50'
+                  }`}
+                >
+                  <Icon className={`h-3.5 w-3.5 ${active ? 'text-cyan-600 dark:text-cyan-400' : 'text-slate-400'}`} />
+                  <span>{item.label}</span>
+                  {item.badge && (
+                    <span className="px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-500/30">
+                      {item.badge}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </nav>
+
+          {/* Right: Quick Action Controls & User Profile */}
+          <div className="flex items-center gap-2 sm:gap-2.5 flex-shrink-0">
             
-            {/* Live Security Engine Clock */}
-            <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs">
-              <Clock className="h-3.5 w-3.5 text-cyan-500 dark:text-cyan-400 animate-spin" style={{ animationDuration: '8s' }} />
+            {/* Live Security Engine Status */}
+            <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs">
+              <ShieldCheck className="h-3.5 w-3.5 text-cyan-500 dark:text-cyan-400" />
               <span className="text-slate-500 dark:text-slate-400">{t('engineClock')}:</span>
               <span className="font-mono font-semibold text-cyan-600 dark:text-cyan-300">
                 #{tick !== null ? tick : '--'}
@@ -106,7 +131,7 @@ export default function Navbar({
             <button
               onClick={onRefresh}
               disabled={loading}
-              className="p-2 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition disabled:opacity-50"
+              className="p-2 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition disabled:opacity-50 cursor-pointer"
               title={t('syncData')}
             >
               <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin text-cyan-500' : ''}`} />
@@ -115,7 +140,7 @@ export default function Navbar({
             {/* Theme Toggle (Light / Dark) */}
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition"
+              className="p-2 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition cursor-pointer"
               title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
             >
               {isDark ? (
@@ -129,7 +154,7 @@ export default function Navbar({
             <div className="relative">
               <button
                 onClick={() => { setShowLangMenu(!showLangMenu); setShowProfileMenu(false); }}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300 transition"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300 transition cursor-pointer"
                 title="Change Language"
               >
                 <span className="text-sm leading-none">{currentLanguageObj.flag}</span>
@@ -153,7 +178,7 @@ export default function Navbar({
                         setLanguage(lang.code);
                         setShowLangMenu(false);
                       }}
-                      className={`w-full flex items-center justify-between px-3 py-2 text-xs font-medium transition ${
+                      className={`w-full flex items-center justify-between px-3 py-2 text-xs font-medium transition cursor-pointer ${
                         language === lang.code
                           ? 'bg-cyan-50 dark:bg-cyan-500/10 text-cyan-600 dark:text-cyan-300 font-bold'
                           : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60'
@@ -175,7 +200,7 @@ export default function Navbar({
               <div className="relative">
                 <button
                   onClick={() => { setShowProfileMenu(!showProfileMenu); setShowLangMenu(false); }}
-                  className="flex items-center gap-2 p-1.5 pr-2.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition"
+                  className="flex items-center gap-2 p-1.5 pr-2.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition cursor-pointer"
                 >
                   <div className="h-7 w-7 rounded-lg bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center font-bold text-xs text-white dark:text-slate-950 font-mono">
                     {activeCustomer.name ? activeCustomer.name[0].toUpperCase() : 'U'}
@@ -204,7 +229,7 @@ export default function Navbar({
                           setShowProfileMenu(false);
                           if (onLogout) onLogout();
                         }}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl transition text-left"
+                        className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl transition text-left cursor-pointer"
                       >
                         <LogOut className="h-3.5 w-3.5" />
                         <span>{t('signOut')}</span>
@@ -218,8 +243,8 @@ export default function Navbar({
           </div>
         </div>
 
-        {/* Navigation Tabs */}
-        <nav className="flex space-x-1 overflow-x-auto py-2 scrollbar-none border-t border-slate-200/80 dark:border-slate-800/50">
+        {/* Secondary Navigation Row (Only for screens < xl where single row would overflow) */}
+        <nav className="xl:hidden flex space-x-1.5 overflow-x-auto py-2 scrollbar-none border-t border-slate-200/80 dark:border-slate-800/50">
           {navItems.map((item) => {
             const Icon = item.icon;
             const active = currentTab === item.id;
@@ -227,16 +252,16 @@ export default function Navbar({
               <button
                 key={item.id}
                 onClick={() => setCurrentTab(item.id)}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                   active
                     ? 'bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 border border-cyan-500/30 shadow-sm shadow-cyan-500/10'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-900'
                 }`}
               >
-                <Icon className={`h-4 w-4 ${active ? 'text-cyan-600 dark:text-cyan-400' : 'text-slate-400'}`} />
+                <Icon className={`h-3.5 w-3.5 ${active ? 'text-cyan-600 dark:text-cyan-400' : 'text-slate-400'}`} />
                 <span>{item.label}</span>
                 {item.badge && (
-                  <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-500/30">
+                  <span className="px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-500/30">
                     {item.badge}
                   </span>
                 )}

@@ -31,7 +31,7 @@ const BASE_DICTIONARIES = {
     navLedger: 'Audit Ledger',
     navSpending: 'Spending Intel',
     navGoals: 'Savings Goals',
-    navStressLab: 'Stress Test Lab',
+    navStressLab: 'Security Center',
 
     // Dashboard Overview
     welcomeBack: 'Welcome back',
@@ -105,8 +105,8 @@ const BASE_DICTIONARIES = {
     goalProgress: 'Goal Progress',
 
     // Stress Test Lab
-    stressLabTitle: 'Performance & High-Concurrency Stress Lab',
-    stressLabSubtitle: 'Trigger real-time multi-threaded load tests against the settlement engine to verify thread safety.',
+    stressLabTitle: 'Enterprise Security & System Protection',
+    stressLabSubtitle: 'Continuous automated integrity verification, fraud prevention heuristics, and real-time ledger auditing.',
     runRaceTest: 'Run Race Stress Test',
     runPriorityTest: 'Run Priority Test',
     runLockIntercept: 'Run Lock Intercept',

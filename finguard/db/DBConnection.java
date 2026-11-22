@@ -22,7 +22,7 @@ public class DBConnection {
     private static String driver = "com.mysql.cj.jdbc.Driver";
     private static String url = "jdbc:mysql://localhost:3306/finguard_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
     private static String user = "root";
-    private static String password = "";
+    private static String password = "navneet18";
 
     private static boolean driverLoaded = false;
     private static boolean connected = false;

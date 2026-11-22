@@ -1,59 +1,55 @@
-# FinGuard | Intelligent Banking Safety Console & Concurrency Lab
+# FinGuard | Intelligent Banking & Security Management Platform
 
-A modern, multi-threaded banking safety web platform with automated fraud prevention, real-time stress testing, multi-language translation via API, and full Light & Dark mode support.
+A modern, multi-threaded banking safety web platform featuring real-time fraud quarantine, atomic transaction isolation, MySQL persistence, multilingual translation, and full Light & Dark mode support.
 
 ---
 
-## 🚀 Quick Start Guide
+## 🚀 Quick Start Guide (One-Click)
 
-### 1. Start the Java Backend Server (Port 8080)
-From the project root:
+### 💻 On macOS / Linux:
+Run the unified startup script from the root directory:
 ```bash
-# Compile all Java sources
-javac -d . finguard/api/*.java finguard/*.java finguard/*/*.java
-
-# Run the API server
-java finguard.api.ApiMain
+./start.sh
 ```
-The Java server starts an embedded HTTP server on `http://localhost:8080`, initializes the daemon `BankClock`, `CooldownVault` watcher, and `SettlementWorker` threads, and seeds demo data:
-* **C101 (Navneet)**: PIN `1234` | Accounts: `FG1001` (Savings, ₹100,000) & `FG1002` (Current, ₹25,000)
-* **C102 (Aarav)**: PIN `2345` | Account: `FG1003` (Savings, ₹40,000)
-* **C103 (Meera)**: PIN `3456` | Account: `FG1004` (Savings, ₹15,000)
+*(Or simply run `npm start`)*
+
+### 🪟 On Windows:
+Double-click `start.bat` or run in Command Prompt:
+```cmd
+start.bat
+```
+
+This automatically:
+1. Compiles and starts the **Java API Server** on `http://localhost:8080`.
+2. Starts the **React + Tailwind Frontend** on `http://localhost:5173`.
+3. Opens your live banking application.
 
 ---
 
-### 2. Start the React + Tailwind Frontend (Port 5173)
-In another terminal tab:
+## 🌐 Running Frontend Standalone
+If you or someone you shared the folder with only wants to run the frontend without Java or MySQL:
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-Open **[http://localhost:5173](http://localhost:5173)** in your browser.
+Open **`http://localhost:5173`** in your browser.
+The platform includes an **Autonomous Engine Fallback** that seamlessly handles registration, sign-in, transfers, and security audits directly in the browser with **zero 502 errors**!
 
 ---
 
-## 🌟 New Features
+## 🔐 Key Features
 
-### 🌐 1. Multilingual Support (via Translation API)
-Switch languages anytime directly from the top navigation:
-* 🇺🇸 **English** (`en`)
-* 🇮🇳 **हिन्दी** (`hi`)
-* 🇪🇸 **Español** (`es`)
-* 🇫🇷 **Français** (`fr`)
-* 🇩🇪 **Deutsch** (`de`)
+### 1. Case-Insensitive Authentication
+* **Create Account**: Register with any Username, Password, Name, and Opening Deposit.
+* **Sign In**: Case-insensitive matching (`navneet` vs `Navneet` vs `NAVNEET` are identical).
+* **Duplicate Detection**: Prevents duplicate usernames with immediate validation feedback.
 
-Includes high-speed zero-latency dictionary caches plus on-demand dynamic API translation fetching via the open translation API.
+### 2. Dual-Engine Persistence
+* **MySQL Database**: Persists customers, accounts, and transactions to MySQL `finguard_db`.
+* **Autonomous Fallback**: If MySQL or Java is unreachable, the app runs without error on client storage.
 
----
-
-### 🌓 2. White (Light) & Dark Theme
-Toggle between crisp **White Mode** and sleek **Dark Fintech Mode** using the Sun/Moon toggle button. All dashboards, cards, tables, modals, and terminals automatically adjust with seamless transitions.
-
----
-
-### 🔐 3. Authentication & Profile Sessions
-* **Sign In**: Customer ID + Security PIN.
-* **Sign Up**: Full Legal Name, Security PIN, Account Type selection, and initial deposit.
-* **Instant Demo Logins**: 1-Click access for Navneet, Aarav, and Meera.
-* **Sign Out**: Profile dropdown menu with persistent session storage.
+### 3. Banking Security Center
+* **Cooldown Safety Vault**: Quarantines high-value transfers with an instant recall/cancel button.
+* **Atomic Ledger Reconciliation**: Mathematical cross-checks confirming zero ledger drift.
+* **Emergency Circuit Breaker**: Instant zero-latency account freeze and protection.

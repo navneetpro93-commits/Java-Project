@@ -135,8 +135,9 @@ public class Bank {
         customers.put(id, c);
         try {
             customerDAO.save(c);
+            System.out.println("[MySQL SUCCESS] Saved customer " + c.getUsername() + " (" + id + ") to database.");
         } catch (Exception e) {
-            System.err.println("[MySQL Error] Could not save customer: " + e.getMessage());
+            System.err.println("[MySQL ERROR] Could not save customer: " + e.getMessage());
             throw new RuntimeException("Database error saving customer: " + e.getMessage());
         }
         return c;
@@ -161,6 +162,7 @@ public class Bank {
         c.addAccountNumber(accNo);
         try {
             accountDAO.save(acc);
+            System.out.println("[MySQL SUCCESS] Saved account " + accNo + " to database.");
             if (opening > 0) {
                 int id;
                 synchronized (this) {
@@ -170,8 +172,12 @@ public class Bank {
                         opening, null, accNo, "Account Opening Deposit", "TRANSFER", "SUCCESS", 0);
                 acc.record(initTxn);
                 transactionDAO.save(initTxn);
+                System.out.println("[MySQL SUCCESS] Saved opening transaction #" + id + " to database.");
             }
-        } catch (Exception ignored) {}
+        } catch (Exception e) {
+            System.err.println("[MySQL ERROR] Could not save account/transaction: " + e.getMessage());
+            throw new RuntimeException("Database error saving account: " + e.getMessage());
+        }
         return acc;
     }
 
@@ -359,7 +365,10 @@ public class Bank {
             try {
                 accountDAO.updateBalance(acc.getAccountNumber(), acc.getBalance());
                 transactionDAO.save(t);
-            } catch (Exception ignored) {}
+                System.out.println("[MySQL SUCCESS] Updated balance for " + acc.getAccountNumber() + " and recorded transaction #" + t.getId());
+            } catch (Exception e) {
+                System.err.println("[MySQL ERROR] Updating balance/transaction: " + e.getMessage());
+            }
             maybeChallenge(acc, request);
             return "SUCCESS credit Rs." + request.getAmount() + " to " + acc.maskNumber()
                     + " bal=" + acc.getBalance();
@@ -413,7 +422,10 @@ public class Bank {
                 try {
                     accountDAO.updateBalance(from.getAccountNumber(), from.getBalance());
                     transactionDAO.save(t);
-                } catch (Exception ignored) {}
+                    System.out.println("[MySQL SUCCESS] Debit " + from.getAccountNumber() + " recorded txn #" + t.getId());
+                } catch (Exception e) {
+                    System.err.println("[MySQL ERROR] Debit balance/transaction: " + e.getMessage());
+                }
             }
             return;
         }
@@ -438,7 +450,10 @@ public class Bank {
                     accountDAO.updateBalance(from.getAccountNumber(), from.getBalance());
                     accountDAO.updateBalance(to.getAccountNumber(), to.getBalance());
                     transactionDAO.save(t);
-                } catch (Exception ignored) {}
+                    System.out.println("[MySQL SUCCESS] Transferred between " + from.getAccountNumber() + " & " + to.getAccountNumber() + ", recorded txn #" + t.getId());
+                } catch (Exception e) {
+                    System.err.println("[MySQL ERROR] Transfer balance/transaction: " + e.getMessage());
+                }
             }
         }
     }
