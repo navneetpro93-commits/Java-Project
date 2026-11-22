@@ -25,8 +25,8 @@ import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
 
 export default function AuthPage({ onLoginSuccess }) {
-  // Start on 'signup' mode so user can create account first
-  const [mode, setMode] = useState('signup'); // 'signup' or 'login'
+  // Start on 'login' mode so users land directly on the Login page
+  const [mode, setMode] = useState('login'); // 'login' or 'signup'
   
   // Login Form State
   const [loginUsername, setLoginUsername] = useState('');
@@ -325,19 +325,8 @@ export default function AuthPage({ onLoginSuccess }) {
           <div className="lg:col-span-6 w-full max-w-xl mx-auto">
             <div className="p-6 sm:p-8 rounded-3xl bg-white/95 dark:bg-slate-900/90 backdrop-blur-xl border border-slate-200/90 dark:border-slate-800/90 shadow-2xl transition-colors">
               
-              {/* Tab Selector: 1. Create Account | 2. Sign In */}
+              {/* Tab Selector: 1. Sign In (Login) | 2. Create Account */}
               <div className="flex rounded-2xl bg-slate-100 dark:bg-slate-950 p-1.5 mb-6 border border-slate-200 dark:border-slate-800">
-                <button
-                  type="button"
-                  onClick={() => { setMode('signup'); setError(null); }}
-                  className={`flex-1 py-2.5 px-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all cursor-pointer ${
-                    mode === 'signup'
-                      ? 'bg-white dark:bg-slate-800 text-cyan-600 dark:text-cyan-400 shadow-md border border-slate-200/60 dark:border-slate-700/60'
-                      : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-                  }`}
-                >
-                  {t('tabCreateAccount')}
-                </button>
                 <button
                   type="button"
                   onClick={() => { setMode('login'); setError(null); }}
@@ -347,7 +336,18 @@ export default function AuthPage({ onLoginSuccess }) {
                       : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
                   }`}
                 >
-                  {t('tabSignIn')}
+                  {t('signInBtn') || 'Sign In'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setMode('signup'); setError(null); }}
+                  className={`flex-1 py-2.5 px-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all cursor-pointer ${
+                    mode === 'signup'
+                      ? 'bg-white dark:bg-slate-800 text-cyan-600 dark:text-cyan-400 shadow-md border border-slate-200/60 dark:border-slate-700/60'
+                      : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                  }`}
+                >
+                  {t('createAccountBtn') || 'Create Account'}
                 </button>
               </div>
 
