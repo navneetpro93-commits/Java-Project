@@ -12,6 +12,7 @@ export const SUPPORTED_LANGUAGES = [
 
 export const BASE_DICTIONARIES = {
   en: {
+    makeNewPayment: 'Make New Payment',
     creditScoreTitle: 'Credit Bureau Rating',
     creditScoreValue: '785 / 900',
     creditScoreBadge: 'Tier 1 • Excellent',
@@ -273,6 +274,7 @@ export const BASE_DICTIONARIES = {
   },
 
   hi: {
+    makeNewPayment: 'नया भुगतान करें (Make New Payment)',
     creditScoreTitle: 'क्रेडिट ब्यूरो रेटिंग',
     creditScoreValue: '785 / 900',
     creditScoreBadge: 'टियर 1 • उत्कृष्ट',
@@ -534,6 +536,7 @@ export const BASE_DICTIONARIES = {
   },
 
   es: {
+    makeNewPayment: 'Realizar Nuevo Pago',
     creditScoreTitle: 'Calificación Crediticia',
     creditScoreValue: '785 / 900',
     creditScoreBadge: 'Nivel 1 • Excelente',
@@ -783,6 +786,7 @@ export const BASE_DICTIONARIES = {
   },
 
   fr: {
+    makeNewPayment: 'Effectuer un Nouveau Paiement',
     creditScoreTitle: 'Évaluation de Crédit',
     creditScoreValue: '785 / 900',
     creditScoreBadge: 'Niveau 1 • Excellent',
@@ -1032,6 +1036,7 @@ export const BASE_DICTIONARIES = {
   },
 
   de: {
+    makeNewPayment: 'Neue Zahlung Vornehmen',
     creditScoreTitle: 'Kredit-Rating (Score)',
     creditScoreValue: '785 / 900',
     creditScoreBadge: 'Tier 1 • Hervorragend',

@@ -7,12 +7,14 @@ import {
   Zap, 
   FileText, 
   AlertCircle, 
-  CheckCircle2, 
+  Check, 
   Clock, 
-  ShieldAlert, 
-  Terminal, 
-  Sparkles, 
-  ShieldCheck 
+  ShieldCheck, 
+  Sparkles,
+  CreditCard,
+  User,
+  Share2,
+  RefreshCw
 } from 'lucide-react';
 import { api } from '../services/api';
 import { useLanguage } from '../context/LanguageContext';
@@ -86,7 +88,15 @@ export default function Transactions({
         purpose: purpose || `${type} Payment`
       });
 
-      setResult(res);
+      setResult({
+        ...res,
+        paidAmount: Number(amount),
+        paidTo: (type === 'WITHDRAW') ? 'Self / ATM Cash' : (type === 'DEPOSIT' ? fromAccount : (toAccount || 'Recipient')),
+        paidFrom: (type === 'DEPOSIT' || type === 'SALARY') ? 'Direct Deposit Desk' : fromAccount,
+        purposeUsed: purpose || `${type} Payment`,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      });
+
       if (res.ok && onSuccess) {
         onSuccess();
       }
@@ -95,6 +105,12 @@ export default function Transactions({
     } finally {
       setLoading(false);
     }
+  };
+
+  const resetForNewPayment = () => {
+    setResult(null);
+    setAmount('');
+    setError(null);
   };
 
   const isHighValue = Number(amount) >= 25000;
@@ -108,6 +124,9 @@ export default function Transactions({
     { id: 'DEPOSIT', label: t('typeDeposit'), icon: ArrowDownLeft },
     { id: 'WITHDRAW', label: t('typeWithdraw'), icon: ArrowUpRight },
   ];
+
+  const isSuccess = result?.message?.startsWith('SUCCESS');
+  const isHeld = result?.message?.startsWith('HELD');
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
@@ -123,9 +142,9 @@ export default function Transactions({
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
-        {/* Form Panel (7 cols) */}
+        {/* Left: Transfer Form (7 cols) */}
         <div className="lg:col-span-7 bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl transition-colors">
           
           {/* Action Tabs */}
@@ -154,7 +173,7 @@ export default function Transactions({
           {/* Account Locked Warning */}
           {isFrozen && type !== 'DEPOSIT' && (
             <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/30 text-rose-700 dark:text-rose-300 text-xs mb-4 flex items-center gap-2">
-              <ShieldAlert className="h-4 w-4 text-rose-500 flex-shrink-0" />
+              <AlertCircle className="h-4 w-4 text-rose-500 flex-shrink-0" />
               <span>This account is currently locked. Debits and transfers are blocked until unlocked.</span>
             </div>
           )}
@@ -288,7 +307,7 @@ export default function Transactions({
               </div>
             )}
 
-            {/* Submit */}
+            {/* Submit Button */}
             <button
               type="submit"
               disabled={loading || isFrozen}
@@ -302,7 +321,7 @@ export default function Transactions({
               ) : (
                 <>
                   <Send className="h-4 w-4" />
-                  <span>{t('authorize')} {type}</span>
+                  <span>Pay Now • {type}</span>
                 </>
               )}
             </button>
@@ -310,63 +329,194 @@ export default function Transactions({
 
         </div>
 
-        {/* Live Feedback & Audit (5 cols) */}
-        <div className="lg:col-span-5 space-y-4">
+        {/* Right: Google Pay (GPay) Style Payment Receipt & Success Screen (5 cols) */}
+        <div className="lg:col-span-5">
           
-          {/* Result Card */}
-          {result ? (
-            <div className={`p-5 sm:p-6 rounded-3xl border shadow-xl ${
-              result.message.startsWith('SUCCESS')
-                ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-500/30'
-                : result.message.startsWith('HELD')
-                ? 'bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-500/30'
-                : 'bg-rose-50 dark:bg-rose-950/20 border-rose-200 dark:border-rose-500/30'
-            }`}>
-              <div className="flex items-center gap-2 mb-2">
-                {result.message.startsWith('SUCCESS') ? (
-                  <CheckCircle2 className="h-5 w-5 text-emerald-500" />
-                ) : result.message.startsWith('HELD') ? (
-                  <Clock className="h-5 w-5 text-amber-500" />
-                ) : (
-                  <AlertCircle className="h-5 w-5 text-rose-500" />
-                )}
-                <span className="font-bold text-sm text-slate-900 dark:text-white">
-                  {result.message.startsWith('SUCCESS')
-                    ? t('settledSuccess')
-                    : result.message.startsWith('HELD')
-                    ? t('placedInHold')
-                    : t('blockedByFraud')}
-                </span>
+          {/* STATE 1: GPay Style SUCCESS SCREEN WITH ICONIC TICK */}
+          {result && isSuccess && (
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl text-center relative overflow-hidden animate-fade-in transition-all">
+              
+              {/* Background ambient glow */}
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-48 bg-emerald-500/15 rounded-full blur-2xl pointer-events-none" />
+
+              {/* Animated GPay Circular Green Tick Badge */}
+              <div className="relative mx-auto my-3 flex items-center justify-center">
+                <div className="w-24 h-24 rounded-full bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center animate-pulse">
+                  <div className="w-18 h-18 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-xl shadow-emerald-500/40">
+                    <Check className="h-10 w-10 stroke-[3.5]" />
+                  </div>
+                </div>
               </div>
-              <p className="text-xs text-slate-700 dark:text-slate-200 font-mono mb-2">{result.message}</p>
-            </div>
-          ) : (
-            <div className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 text-center shadow-md">
-              <Sparkles className="h-8 w-8 text-slate-400 dark:text-slate-600 mx-auto mb-2" />
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                {t('initialIdleAudit')}
+
+              {/* Payment Headline */}
+              <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight mt-3">
+                Payment Successful
+              </h3>
+              
+              {/* Big Bold Amount */}
+              <div className="text-3xl sm:text-4xl font-extrabold font-mono text-slate-900 dark:text-white tracking-tight mt-2">
+                ₹{Number(result.paidAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+              </div>
+
+              {/* Paid to Details */}
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                Paid to <span className="font-bold text-slate-800 dark:text-slate-200">{result.paidTo}</span>
               </p>
+
+              {/* Google Pay Style Receipt Slip */}
+              <div className="mt-6 p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/80 border border-slate-100 dark:border-slate-800/80 text-left text-xs space-y-2.5 font-sans">
+                <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
+                  <span>Transfer Mode</span>
+                  <span className="font-semibold text-slate-800 dark:text-slate-200">Instant UPI / IMPS</span>
+                </div>
+                <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
+                  <span>Debited From</span>
+                  <span className="font-mono text-slate-800 dark:text-slate-200">{result.paidFrom}</span>
+                </div>
+                <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
+                  <span>Purpose / Note</span>
+                  <span className="font-medium text-slate-800 dark:text-slate-200">{result.purposeUsed}</span>
+                </div>
+                <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-200/60 dark:border-slate-800/60">
+                  <span>Completed At</span>
+                  <span className="font-mono text-slate-800 dark:text-slate-200">{result.timestamp}</span>
+                </div>
+              </div>
+
+              {/* Done / Make Another Payment Button */}
+              <div className="mt-6 space-y-2">
+                <button
+                  onClick={resetForNewPayment}
+                  className="w-full py-3 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100 font-bold text-xs uppercase tracking-wider transition shadow-lg cursor-pointer"
+                >
+                  Make Another Payment
+                </button>
+              </div>
+
+              {/* Verified Trust Stamp */}
+              <div className="mt-4 flex items-center justify-center gap-1.5 text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
+                <ShieldCheck className="h-3.5 w-3.5" />
+                <span>Verified by FinGuard Instant Banking Network</span>
+              </div>
+
             </div>
           )}
 
-          {/* Real-time System Terminal */}
-          <div className="p-4 sm:p-5 rounded-3xl bg-slate-950 border border-slate-800 shadow-xl">
-            <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-800 text-xs">
-              <span className="text-slate-400 font-mono flex items-center gap-1.5">
-                <Terminal className="h-3.5 w-3.5 text-cyan-400" />
-                {t('telemetryAuditLog')}
-              </span>
-              <span className="text-[10px] text-slate-500 font-mono">{t('telemetryLive')}</span>
+          {/* STATE 2: HELD IN SAFETY VAULT (High-Value Quarantine) */}
+          {result && isHeld && (
+            <div className="bg-white dark:bg-slate-900 border border-amber-200 dark:border-amber-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl text-center relative overflow-hidden animate-fade-in transition-all">
+              <div className="w-20 h-20 mx-auto rounded-full bg-amber-100 dark:bg-amber-500/20 text-amber-500 flex items-center justify-center mb-3">
+                <Clock className="h-9 w-9 animate-pulse" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+                Placed in Safety Hold
+              </h3>
+              <div className="text-3xl font-extrabold font-mono text-amber-600 dark:text-amber-400 mt-2">
+                ₹{Number(result.paidAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 max-w-xs mx-auto leading-relaxed">
+                High-value transfer securely quarantined in the Cooldown Vault. You can recall this anytime before release.
+              </p>
+              <button
+                onClick={resetForNewPayment}
+                className="mt-6 w-full py-3 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs uppercase tracking-wider transition shadow-md cursor-pointer"
+              >
+                Done
+              </button>
             </div>
-            <pre className="text-[11px] font-mono text-emerald-400 bg-slate-950/90 p-3 rounded-xl overflow-x-auto max-h-56 scrollbar-thin whitespace-pre-wrap">
-              {result?.log || '// Transaction settlement engine active...\n// Waiting for transaction dispatch...'}
-            </pre>
-          </div>
+          )}
 
-          <div className="p-4 rounded-2xl bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400 flex items-center gap-2 shadow-sm">
-            <ShieldCheck className="h-4 w-4 text-cyan-500 flex-shrink-0" />
-            <span>{t('deadlockFreeAssurance')}</span>
-          </div>
+          {/* STATE 3: FAILED / BLOCKED */}
+          {result && !isSuccess && !isHeld && (
+            <div className="bg-white dark:bg-slate-900 border border-rose-200 dark:border-rose-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl text-center relative overflow-hidden animate-fade-in transition-all">
+              <div className="w-20 h-20 mx-auto rounded-full bg-rose-100 dark:bg-rose-500/20 text-rose-500 flex items-center justify-center mb-3">
+                <AlertCircle className="h-9 w-9" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+                Payment Declined
+              </h3>
+              <p className="text-xs text-rose-600 dark:text-rose-400 mt-2 max-w-xs mx-auto leading-relaxed font-medium">
+                {result.message}
+              </p>
+              <button
+                onClick={resetForNewPayment}
+                className="mt-6 w-full py-3 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:text-slate-950 font-bold text-xs uppercase tracking-wider transition cursor-pointer"
+              >
+                Try Again
+              </button>
+            </div>
+          )}
+
+          {/* STATE 4: IDLE PAYMENT PREVIEW CARD (BEFORE PAYMENT) */}
+          {!result && (
+            <div className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xl space-y-5 transition-all">
+              
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-2">
+                  <div className="h-8 w-8 rounded-full bg-cyan-50 dark:bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 flex items-center justify-center">
+                    <CreditCard className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-900 dark:text-white">Payment Summary</h4>
+                    <p className="text-[10px] text-slate-400">Live Transaction Preview</p>
+                  </div>
+                </div>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 flex items-center gap-1">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  Instant UPI Active
+                </span>
+              </div>
+
+              {/* Amount Display */}
+              <div className="text-center py-4 bg-slate-50 dark:bg-slate-950/60 rounded-2xl border border-slate-100 dark:border-slate-800/80">
+                <span className="text-[11px] text-slate-400 font-medium">Transfer Amount</span>
+                <div className="text-3xl font-black font-mono text-slate-900 dark:text-white mt-1">
+                  ₹{amount ? Number(amount).toLocaleString('en-IN', { minimumFractionDigits: 2 }) : '0.00'}
+                </div>
+                <span className="text-[10px] text-slate-400 mt-1 block">Zero Transfer Fees • 100% Free</span>
+              </div>
+
+              {/* Transfer Details List */}
+              <div className="space-y-3 text-xs">
+                <div className="flex items-center justify-between text-slate-600 dark:text-slate-400">
+                  <span className="flex items-center gap-1.5">
+                    <User className="h-3.5 w-3.5 text-slate-400" />
+                    Recipient
+                  </span>
+                  <span className="font-semibold text-slate-900 dark:text-white font-mono">
+                    {toAccount || 'Select Beneficiary'}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between text-slate-600 dark:text-slate-400">
+                  <span className="flex items-center gap-1.5">
+                    <CreditCard className="h-3.5 w-3.5 text-slate-400" />
+                    Pay From
+                  </span>
+                  <span className="font-semibold text-slate-900 dark:text-white font-mono">
+                    {fromAccount || 'Primary Account'}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between text-slate-600 dark:text-slate-400">
+                  <span className="flex items-center gap-1.5">
+                    <Zap className="h-3.5 w-3.5 text-amber-500" />
+                    Settlement Speed
+                  </span>
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                    Real-Time (&lt; 1 sec)
+                  </span>
+                </div>
+              </div>
+
+              {/* Security Seal */}
+              <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2.5 text-[11px] text-slate-500 dark:text-slate-400">
+                <ShieldCheck className="h-4 w-4 text-cyan-500 flex-shrink-0" />
+                <span>Protected by FinGuard Bank-Grade 256-bit Encryption.</span>
+              </div>
+
+            </div>
+          )}
 
         </div>
 
