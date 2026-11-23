@@ -66,6 +66,12 @@ public class Bank {
         boolean dbOk = finguard.db.DBConnection.initializeSchema();
         if (dbOk) {
             try {
+                customers.clear();
+                accounts.clear();
+                this.customerSeq = 100;
+                this.accountSeq = 1000;
+                this.txnSeq = 1;
+
                 HashMap<String, Customer> dbCustomers = customerDAO.findAll();
                 HashMap<String, Account> dbAccounts = accountDAO.findAll();
                 if (dbCustomers != null && !dbCustomers.isEmpty()) {
@@ -93,8 +99,24 @@ public class Bank {
                             if (accNum > accountSeq) accountSeq = accNum;
                         } catch (Exception ignored) {}
                     }
-                    System.out.println("[JDBC] Initialized from MySQL database (Loaded " + customers.size() + " customers, " + accounts.size() + " accounts).");
                 }
+
+                ArrayList<Transaction> dbTxns = transactionDAO.findAll();
+                if (dbTxns != null && !dbTxns.isEmpty()) {
+                    for (Transaction t : dbTxns) {
+                        if (t.getId() > txnSeq) txnSeq = t.getId();
+                        if (t.getFromAccount() != null) {
+                            Account fa = accounts.get(t.getFromAccount());
+                            if (fa != null) fa.record(t);
+                        }
+                        if (t.getToAccount() != null && !t.getToAccount().equals(t.getFromAccount())) {
+                            Account ta = accounts.get(t.getToAccount());
+                            if (ta != null) ta.record(t);
+                        }
+                    }
+                }
+
+                System.out.println("[JDBC] Initialized from MySQL database (Loaded " + customers.size() + " customers, " + accounts.size() + " accounts, " + (dbTxns != null ? dbTxns.size() : 0) + " transactions).");
             } catch (Exception e) {
                 System.out.println("[JDBC] Notice reading relational tables: " + e.getMessage());
             }
@@ -122,18 +144,14 @@ public class Bank {
         String cleanPass = (password != null && !password.trim().isEmpty()) ? password.trim() : "1234";
         String cleanName = (name != null && !name.trim().isEmpty()) ? name.trim() : cleanUser;
 
-        // 1. Check if username already exists in memory
-        for (Customer c : customers.values()) {
-            if (c.getUsername().equalsIgnoreCase(cleanUser)) {
-                throw new IllegalArgumentException("Username '" + cleanUser + "' already exists. Please choose a different username or sign in.");
-            }
-        }
-
-        // 2. Check if username already exists in MySQL database
+        // 1. Check if username already exists in MySQL database (True Source of Truth)
         try {
             Customer dbCustomer = customerDAO.findByUsername(cleanUser);
             if (dbCustomer != null && dbCustomer.getUsername().equalsIgnoreCase(cleanUser)) {
                 throw new IllegalArgumentException("Username '" + cleanUser + "' already exists. Please choose a different username or sign in.");
+            } else {
+                // If deleted from MySQL, purge stale in-memory reference
+                customers.entrySet().removeIf(entry -> entry.getValue().getUsername().equalsIgnoreCase(cleanUser));
             }
         } catch (IllegalArgumentException e) {
             throw e;
@@ -705,32 +723,21 @@ public class Bank {
     }
 
     public synchronized ArrayList<Transaction> getAllRecentTransactions() {
+        try {
+            ArrayList<Transaction> dbList = transactionDAO.findAll();
+            if (dbList != null && !dbList.isEmpty()) {
+                return dbList;
+            }
+        } catch (Exception ignored) {}
+
         HashMap<Integer, Transaction> map = new HashMap<Integer, Transaction>();
         for (Account a : accounts.values()) {
             for (Transaction t : a.copyHistory()) {
                 map.put(t.getId(), t);
             }
         }
-        try {
-            for (Account a : accounts.values()) {
-                ArrayList<Transaction> dbList = transactionDAO.findByAccount(a.getAccountNumber(), "DATE");
-                if (dbList != null) {
-                    for (Transaction t : dbList) {
-                        map.put(t.getId(), t);
-                    }
-                }
-            }
-        } catch (Exception ignored) {}
-
         ArrayList<Transaction> list = new ArrayList<Transaction>(map.values());
-        Collections.sort(list, new Comparator<Transaction>() {
-            public int compare(Transaction a, Transaction b) {
-                if (b.getTick() != a.getTick()) {
-                    return b.getTick() - a.getTick();
-                }
-                return b.getId() - a.getId();
-            }
-        });
+        Collections.sort(list);
         return list;
     }
 

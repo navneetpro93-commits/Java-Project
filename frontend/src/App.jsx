@@ -54,12 +54,16 @@ function MainApp() {
       setTick(data.tick);
       setIsOnline(true);
 
-      // If activeCustomer is authenticated, keep it synchronized
-      if (activeCustomer && data.customers && data.customers.length > 0) {
-        const matching = data.customers.find((c) => c.id === activeCustomer.id);
+      // If activeCustomer is authenticated, keep it synchronized or log out if deleted from DB
+      if (activeCustomer) {
+        const matching = (data.customers || []).find((c) => c.id === activeCustomer.id || c.username?.toLowerCase() === activeCustomer.username?.toLowerCase());
         if (matching) {
           setActiveCustomer(matching);
           localStorage.setItem('finguard_active_user', JSON.stringify(matching));
+        } else {
+          setActiveCustomer(null);
+          localStorage.removeItem('finguard_active_user');
+          localStorage.removeItem('finguard_selected_account');
         }
       }
 

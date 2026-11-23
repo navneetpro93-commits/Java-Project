@@ -157,7 +157,7 @@ public class ApiServer {
             } else {
                 send(exchange, 404, "{\"error\":\"Unknown route " + path + "\"}");
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             String message = e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage();
             send(exchange, 400, "{\"error\":" + Json.q(message) + "}");
         }

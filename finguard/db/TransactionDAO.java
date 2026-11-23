@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import finguard.model.Transaction;
 
 /**
- * Topics 19-20: Statement.RETURN_GENERATED_KEYS and ResultSet record mapping.
+ * TransactionDAO: Persistent Audit Ledger backed by MySQL relational table.
  */
 public class TransactionDAO {
 
@@ -59,6 +59,35 @@ public class TransactionDAO {
         PreparedStatement ps = conn.prepareStatement(sql.toString());
         ps.setString(1, accNo);
         ps.setString(2, accNo);
+        ResultSet rs = ps.executeQuery();
+
+        ArrayList<Transaction> list = new ArrayList<Transaction>();
+        while (rs.next()) {
+            Transaction t = new Transaction(
+                    rs.getInt("id"),
+                    rs.getInt("tick"),
+                    rs.getString("type"),
+                    rs.getDouble("amount"),
+                    rs.getString("from_account"),
+                    rs.getString("to_account"),
+                    rs.getString("purpose"),
+                    rs.getString("category"),
+                    rs.getString("status"),
+                    rs.getInt("risk_score"));
+            list.add(t);
+        }
+        rs.close();
+        ps.close();
+        conn.close();
+        return list;
+    }
+
+    public ArrayList<Transaction> findAll() throws SQLException {
+        String sql = "SELECT id, tick, type, amount, from_account, to_account, purpose, category, status, risk_score "
+                + "FROM transactions ORDER BY id DESC LIMIT 100";
+
+        Connection conn = DBConnection.getConnection();
+        PreparedStatement ps = conn.prepareStatement(sql);
         ResultSet rs = ps.executeQuery();
 
         ArrayList<Transaction> list = new ArrayList<Transaction>();
