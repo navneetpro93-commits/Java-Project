@@ -704,6 +704,36 @@ public class Bank {
         return list;
     }
 
+    public synchronized ArrayList<Transaction> getAllRecentTransactions() {
+        HashMap<Integer, Transaction> map = new HashMap<Integer, Transaction>();
+        for (Account a : accounts.values()) {
+            for (Transaction t : a.copyHistory()) {
+                map.put(t.getId(), t);
+            }
+        }
+        try {
+            for (Account a : accounts.values()) {
+                ArrayList<Transaction> dbList = transactionDAO.findByAccount(a.getAccountNumber(), "DATE");
+                if (dbList != null) {
+                    for (Transaction t : dbList) {
+                        map.put(t.getId(), t);
+                    }
+                }
+            }
+        } catch (Exception ignored) {}
+
+        ArrayList<Transaction> list = new ArrayList<Transaction>(map.values());
+        Collections.sort(list, new Comparator<Transaction>() {
+            public int compare(Transaction a, Transaction b) {
+                if (b.getTick() != a.getTick()) {
+                    return b.getTick() - a.getTick();
+                }
+                return b.getId() - a.getId();
+            }
+        });
+        return list;
+    }
+
     public SpendingIntelligence.ArrayReport spendingReport(String accNo) throws AccountNotFoundException {
         Account acc = requireAccount(accNo);
         Customer c = requireCustomer(acc.getCustomerId());

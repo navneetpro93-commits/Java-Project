@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { api } from '../services/api';
 import { useLanguage } from '../context/LanguageContext';
+import { useNotifications } from '../context/NotificationContext';
 
 export default function Transactions({
   overview,
@@ -29,6 +30,7 @@ export default function Transactions({
   onSuccess
 }) {
   const { t } = useLanguage();
+  const { addNotification } = useNotifications();
   const [type, setType] = useState(initialType);
   const [fromAccount, setFromAccount] = useState(initialAccount || '');
   const [toAccount, setToAccount] = useState('');
@@ -101,6 +103,53 @@ export default function Transactions({
         dateStr: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
         refId: 'FG' + Math.floor(1000000000 + Math.random() * 9000000000)
       });
+
+      // Post real-time payment notification (turns Instagram heart RED)
+      if (res.ok) {
+        try {
+          const isIncoming = (type === 'DEPOSIT' || type === 'SALARY');
+          if (isIncoming) {
+            addNotification({
+              type: 'RECEIVED',
+              title: `Payment Received • ₹${Number(amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`,
+              amount: Number(amount),
+              account: (type === 'DEPOSIT' ? fromAccount : toAccount),
+              fromAccount: 'Direct Deposit Desk',
+              toAccount: (type === 'DEPOSIT' ? fromAccount : toAccount),
+              purpose: purpose || `${type} Payment`,
+              status: res.message?.startsWith('HELD') ? 'HELD' : 'SUCCESS'
+            });
+          } else {
+            addNotification({
+              type: 'DEBITED',
+              title: `Payment Debited • ₹${Number(amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`,
+              amount: Number(amount),
+              account: fromAccount,
+              fromAccount,
+              toAccount: toAccount || 'ATM / Cash Desk',
+              purpose: purpose || `${type} Payment`,
+              status: res.message?.startsWith('HELD') ? 'HELD' : 'SUCCESS'
+            });
+
+            // If recipient is another account belonging to user
+            const isUserRecipient = accounts.some(a => a.number === toAccount && a.customerId === activeCustomer?.id);
+            if (isUserRecipient) {
+              addNotification({
+                type: 'RECEIVED',
+                title: `Payment Received • ₹${Number(amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`,
+                amount: Number(amount),
+                account: toAccount,
+                fromAccount,
+                toAccount,
+                purpose: purpose || `${type} Payment`,
+                status: res.message?.startsWith('HELD') ? 'HELD' : 'SUCCESS'
+              });
+            }
+          }
+        } catch (notifErr) {
+          console.warn('Could not trigger notification:', notifErr);
+        }
+      }
 
       if (res.ok && onSuccess) {
         onSuccess();

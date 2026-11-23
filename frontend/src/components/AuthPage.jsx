@@ -277,48 +277,6 @@ export default function AuthPage({ onLoginSuccess }) {
               </div>
             </div>
 
-            {/* FinGuard Platinum Debit Card Mockup */}
-            <div className="relative p-5 sm:p-6 rounded-3xl bg-gradient-to-tr from-slate-900 via-indigo-950 to-slate-900 border border-cyan-500/30 text-white shadow-2xl overflow-hidden">
-              <div className="absolute -right-8 -bottom-8 w-44 h-44 bg-cyan-500/20 rounded-full blur-2xl pointer-events-none" />
-              
-              <div className="relative z-10 flex items-center justify-between mb-6">
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="h-5 w-5 text-cyan-400" />
-                  <span className="font-bold tracking-tight text-sm">{t('platinumCard')}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Wifi className="h-4 w-4 text-cyan-400/80 rotate-90" />
-                  <span className="text-[10px] tracking-wider uppercase font-mono px-2 py-0.5 rounded-full bg-cyan-400/15 border border-cyan-400/30 text-cyan-300">
-                    {t('activeProtection')}
-                  </span>
-                </div>
-              </div>
-
-              <div className="relative z-10 my-4 flex items-center gap-4">
-                <div className="w-10 h-7 rounded-md bg-gradient-to-br from-amber-300 via-amber-400 to-amber-600 p-0.5 shadow-sm">
-                  <div className="w-full h-full border border-amber-800/40 rounded-[4px] flex items-center justify-center">
-                    <div className="w-4 h-3 border border-amber-900/40 rounded-sm" />
-                  </div>
-                </div>
-                <span className="font-mono text-base sm:text-lg tracking-widest text-slate-200">
-                  •••• •••• •••• 1001
-                </span>
-              </div>
-
-              <div className="relative z-10 flex items-end justify-between pt-2 text-xs font-mono">
-                <div>
-                  <div className="text-[9px] text-slate-400 font-sans">{t('cardHolder')}</div>
-                  <div className="font-bold tracking-wider text-slate-200">
-                    {signupName || signupUsername || 'FINTECH CLIENT'}
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="text-[9px] text-slate-400 font-sans">{t('validThru')}</div>
-                  <div className="font-bold text-slate-200">12/29</div>
-                </div>
-              </div>
-            </div>
-
           </div>
 
           {/* Right Column: Auth Card Form */}

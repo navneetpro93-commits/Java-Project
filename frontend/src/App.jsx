@@ -12,6 +12,7 @@ import CreateAccountModal from './components/CreateAccountModal';
 import AuthPage from './components/AuthPage';
 import { ThemeProvider } from './context/ThemeContext';
 import { LanguageProvider, useLanguage } from './context/LanguageContext';
+import { NotificationProvider } from './context/NotificationContext';
 import { api } from './services/api';
 
 function MainApp() {
@@ -127,23 +128,24 @@ function MainApp() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 flex flex-col font-sans selection:bg-cyan-500 selection:text-slate-950 transition-colors duration-200">
-      
-      {/* Top Navigation */}
-      <Navbar
-        currentTab={currentTab}
-        setCurrentTab={setCurrentTab}
-        tick={tick}
-        isOnline={isOnline}
-        activeCustomer={activeCustomer}
-        onLogout={handleLogout}
-        cooldownCount={overview?.cooldown?.length || 0}
-        onRefresh={() => refreshData(true)}
-        loading={loading}
-      />
+    <NotificationProvider activeCustomer={activeCustomer} overview={overview}>
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 flex flex-col font-sans selection:bg-cyan-500 selection:text-slate-950 transition-colors duration-200 w-full max-w-full overflow-x-hidden">
+        
+        {/* Top Navigation */}
+        <Navbar
+          currentTab={currentTab}
+          setCurrentTab={setCurrentTab}
+          tick={tick}
+          isOnline={isOnline}
+          activeCustomer={activeCustomer}
+          onLogout={handleLogout}
+          cooldownCount={overview?.cooldown?.length || 0}
+          onRefresh={() => refreshData(true)}
+          loading={loading}
+        />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 min-w-0">
         
         {/* Offline Notice */}
         {!isOnline && (
@@ -255,7 +257,8 @@ function MainApp() {
         />
       )}
 
-    </div>
+      </div>
+    </NotificationProvider>
   );
 }
 

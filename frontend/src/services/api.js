@@ -59,6 +59,8 @@ export const api = {
   // Health & Heartbeat
   getHealth: () => request('/health'),
   getOverview: () => request('/overview'),
+  getTransactions: () => request('/transactions'),
+  getNotifications: () => request('/notifications'),
 
   // Authentication & Customers
   login: (username, password) =>

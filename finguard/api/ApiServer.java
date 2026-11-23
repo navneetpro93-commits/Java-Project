@@ -152,6 +152,8 @@ public class ApiServer {
                 send(exchange, 200, "{\"log\":" + Json.q(freezeDemo()) + "}");
             } else if ("GET".equals(method) && "/api/db/status".equals(path)) {
                 send(exchange, 200, dbStatusJson());
+            } else if ("GET".equals(method) && ("/api/transactions".equals(path) || "/api/notifications".equals(path))) {
+                send(exchange, 200, "{\"transactions\":" + transactionsJson() + "}");
             } else {
                 send(exchange, 404, "{\"error\":\"Unknown route " + path + "\"}");
             }
@@ -320,7 +322,34 @@ public class ApiServer {
         }
         json.append("],\"cooldown\":").append(cooldownJson());
         json.append(",\"challenges\":").append(challengesJson());
+        json.append(",\"transactions\":").append(transactionsJson());
         json.append('}');
+        return json.toString();
+    }
+
+    private String transactionsJson() {
+        ArrayList<Transaction> list = bank.getAllRecentTransactions();
+        StringBuilder json = new StringBuilder();
+        json.append('[');
+        int max = Math.min(list.size(), 50);
+        for (int i = 0; i < max; i++) {
+            Transaction txn = list.get(i);
+            if (i > 0) {
+                json.append(',');
+            }
+            json.append("{\"id\":").append(txn.getId())
+                    .append(",\"tick\":").append(txn.getTick())
+                    .append(",\"type\":").append(Json.q(txn.getType()))
+                    .append(",\"amount\":").append(txn.getAmount())
+                    .append(",\"fromAccount\":").append(Json.q(txn.getFromAccount()))
+                    .append(",\"toAccount\":").append(Json.q(txn.getToAccount()))
+                    .append(",\"purpose\":").append(Json.q(txn.getPurpose()))
+                    .append(",\"category\":").append(Json.q(txn.getCategory()))
+                    .append(",\"status\":").append(Json.q(txn.getStatus()))
+                    .append(",\"risk\":").append(txn.getRiskScore())
+                    .append('}');
+        }
+        json.append(']');
         return json.toString();
     }
 

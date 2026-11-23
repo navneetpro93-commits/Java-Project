@@ -53,6 +53,15 @@ export const BASE_DICTIONARIES = {
     activeVerified: 'Active & Verified',
     connectedAccounts: 'Connected Accounts',
     telemetryLive: 'Live Telemetry',
+    activity: 'Activity',
+    notifications: 'Notifications',
+    paymentReceived: 'Payment Received',
+    paymentDebited: 'Payment Debited',
+    allCaughtUp: "You're all caught up!",
+    realtimeAlertsDesc: 'Live alerts for payments received & debited.',
+    markAllRead: 'Mark all as read',
+    clearNotifications: 'Clear notifications',
+    viewFullStatements: 'View Full Statements in Audit Ledger →',
 
     // Navigation Tabs
     navOverview: 'Overview',
