@@ -20,9 +20,9 @@ import java.util.Properties;
 public class DBConnection {
 
     private static String driver = "com.mysql.cj.jdbc.Driver";
-    private static String url = "jdbc:mysql://localhost:3306/finguard_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
-    private static String user = "root";
-    private static String password = "navneet18";
+    private static String url = "jdbc:mysql://mysql-2d3e7faf-bankcore.i.aivencloud.com:19960/defaultdb?sslmode=require&allowPublicKeyRetrieval=true&useSSL=true";
+    private static String user = "avnadmin";
+    private static String password = "";
 
     private static boolean driverLoaded = false;
     private static boolean connected = false;
