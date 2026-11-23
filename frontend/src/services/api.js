@@ -111,6 +111,22 @@ export const api = {
   getSpending: (account) =>
     request(`/spending?account=${encodeURIComponent(account)}`),
 
+  // Budget Management
+  getBudget: (account) =>
+    request(`/budget?account=${encodeURIComponent(account)}`),
+
+  updateBudget: ({ customerId, account, category, amount, budgets }) =>
+    request('/budget', {
+      method: 'POST',
+      body: JSON.stringify({
+        customerId,
+        account,
+        category,
+        amount: amount !== undefined ? Number(amount) : undefined,
+        budgets,
+      }),
+    }),
+
   // Security & Locks
   freeze: (account, pin) =>
     request('/freeze', {

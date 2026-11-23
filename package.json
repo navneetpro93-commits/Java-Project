@@ -5,7 +5,7 @@
   "scripts": {
     "start": "./start.sh",
     "dev": "./start.sh",
-    "build:java": "javac -cp \"lib/mysql-connector-j.jar:.\" -d . finguard/db/*.java finguard/api/*.java finguard/*.java finguard/*/*.java",
+    "build:java": "javac -cp \"lib/mysql-connector-j.jar:.\" -d . finguard/*.java finguard/api/*.java finguard/concurrent/*.java finguard/db/*.java finguard/exception/*.java finguard/model/*.java finguard/safety/*.java finguard/savings/*.java finguard/service/*.java",
     "server": "java -cp \"lib/mysql-connector-j.jar:.\" finguard.api.ApiMain 8080",
     "client": "cd frontend && npm run dev",
     "build": "npm run build:java && cd frontend && npm run build"

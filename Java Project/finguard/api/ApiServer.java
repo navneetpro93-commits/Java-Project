@@ -109,6 +109,20 @@ public class ApiServer {
                 send(exchange, 200, "{\"account\":" + accountJson(account) + "}");
             } else if ("POST".equals(method) && "/api/move".equals(path)) {
                 move(exchange, body);
+            } else if ("POST".equals(method) && "/api/budget".equals(path)) {
+                updateBudget(exchange, body);
+            } else if ("GET".equals(method) && "/api/budget".equals(path)) {
+                String account = queryValue(query, "account");
+                if (account == null || account.isEmpty()) {
+                    String cust = queryValue(query, "customerId");
+                    if (cust != null && !cust.isEmpty()) {
+                        Customer c = bank.requireCustomer(cust);
+                        if (!c.getAccountNumbers().isEmpty()) {
+                            account = c.getAccountNumbers().get(0);
+                        }
+                    }
+                }
+                send(exchange, 200, spendingJson(account));
             } else if ("GET".equals(method) && "/api/statement".equals(path)) {
                 String account = queryValue(query, "account");
                 String sort = queryValue(query, "sort");
@@ -171,14 +185,65 @@ public class ApiServer {
         final String fromAcc = from != null ? from : "";
         final String toAcc = to != null ? to : "";
         final String[] message = new String[1];
+        final SpendingIntelligence.BudgetAlert[] alertHolder = new SpendingIntelligence.BudgetAlert[1];
         String log = ConsoleCapture.run(new Runnable() {
             public void run() {
                 TransactionRequest request = bank.buildRequest(type, fromAcc, toAcc, amount, purpose);
                 message[0] = bank.settle(request, false);
+                alertHolder[0] = bank.getLastBudgetAlert();
                 System.out.println(message[0]);
             }
         });
-        send(exchange, 200, "{\"message\":" + Json.q(message[0]) + ",\"log\":" + Json.q(log) + "}");
+        boolean isOk = message[0] != null && (message[0].startsWith("SUCCESS") || message[0].startsWith("HELD"));
+        StringBuilder res = new StringBuilder();
+        res.append("{\"ok\":").append(isOk)
+                .append(",\"message\":").append(Json.q(message[0]))
+                .append(",\"log\":").append(Json.q(log));
+        if (alertHolder[0] != null) {
+            res.append(",\"budgetAlert\":").append(alertHolder[0].toJson());
+        }
+        res.append('}');
+        send(exchange, 200, res.toString());
+    }
+
+    private void updateBudget(HttpExchange exchange, String body) throws IOException, AccountNotFoundException {
+        String customerId = Json.field(body, "customerId");
+        String account = Json.field(body, "account");
+        if ((customerId == null || customerId.isEmpty()) && account != null && !account.isEmpty()) {
+            try {
+                Account acc = bank.requireAccount(account);
+                customerId = acc.getCustomerId();
+            } catch (Exception ignored) {}
+        }
+        if (customerId == null || customerId.isEmpty()) {
+            throw new IllegalArgumentException("customerId or account is required");
+        }
+
+        HashMap<String, Double> budgets = Json.parseDoubleMap(body, "budgets");
+        String cat = Json.field(body, "category");
+        if (cat != null && !cat.isEmpty()) {
+            double amt = Json.num(body, "amount");
+            budgets.put(cat.toUpperCase(), amt);
+        }
+        if (budgets.isEmpty()) {
+            throw new IllegalArgumentException("No category budgets provided to update");
+        }
+        bank.setCustomerBudgets(customerId, budgets);
+
+        String spending = "{}";
+        if (account != null && !account.isEmpty()) {
+            try {
+                spending = spendingJson(account);
+            } catch (Exception ignored) {}
+        } else {
+            Customer c = bank.requireCustomer(customerId);
+            if (!c.getAccountNumbers().isEmpty()) {
+                try {
+                    spending = spendingJson(c.getAccountNumbers().get(0));
+                } catch (Exception ignored) {}
+            }
+        }
+        send(exchange, 200, "{\"ok\":true,\"message\":\"Monthly budgets updated successfully\",\"spending\":" + spending + "}");
     }
 
     private String priorityDemo() {
@@ -269,7 +334,7 @@ public class ApiServer {
         sb.append("\"user\":").append(Json.q(finguard.db.DBConnection.getUser())).append(",");
         String err = finguard.db.DBConnection.getLastError();
         sb.append("\"lastError\":").append(err == null ? "null" : Json.q(err)).append(",");
-        sb.append("\"tables\":[\"customers\",\"accounts\",\"transactions\",\"cooldown_queue\",\"savings_challenges\"]");
+        sb.append("\"tables\":[\"customers\",\"accounts\",\"transactions\",\"cooldown_queue\",\"savings_challenges\",\"customer_budgets\"]");
         sb.append("}");
         return sb.toString();
     }
@@ -396,12 +461,48 @@ public class ApiServer {
         SpendingIntelligence.ArrayReport report = bank.spendingReport(accountNo);
         HashMap<String, Double> spend = account.copyCategorySpend();
         HashMap<String, Double> budgets = customer.getCategoryBudgets();
+        
+        // Ensure standard categories exist
         HashSet<String> keys = new HashSet<String>();
+        keys.add("FOOD");
+        keys.add("SHOPPING");
+        keys.add("TRAVEL");
+        keys.add("BILLS");
+        keys.add("ENTERTAINMENT");
+        keys.add("ATM");
+        keys.add("TRANSFER");
+        keys.add("OTHER");
         keys.addAll(budgets.keySet());
         keys.addAll(spend.keySet());
+
+        double totalBudget = 0.0;
+        int exceededCount = 0;
+        int warningCount = 0;
+        StringBuilder exceededNames = new StringBuilder();
+
+        for (String key : keys) {
+            Double capObj = budgets.get(key);
+            Double usedObj = spend.get(key);
+            double cap = capObj == null ? 0 : capObj.doubleValue();
+            double used = usedObj == null ? 0 : usedObj.doubleValue();
+            totalBudget += cap;
+            if (cap > 0 && used > cap) {
+                if (exceededCount > 0) exceededNames.append(", ");
+                exceededNames.append(key);
+                exceededCount++;
+            } else if (cap > 0 && used >= 0.8 * cap) {
+                warningCount++;
+            }
+        }
+
         StringBuilder json = new StringBuilder();
         json.append("{\"personality\":").append(Json.q(report.personality))
                 .append(",\"totalDebit\":").append(report.totalDebit)
+                .append(",\"totalBudget\":").append(totalBudget)
+                .append(",\"hasExceeded\":").append(exceededCount > 0)
+                .append(",\"exceededCount\":").append(exceededCount)
+                .append(",\"warningCount\":").append(warningCount)
+                .append(",\"exceededCategories\":").append(Json.q(exceededNames.toString()))
                 .append(",\"vault\":");
         if (account instanceof SavingsAccount) {
             json.append(((SavingsAccount) account).getVaultBalance());
@@ -419,9 +520,22 @@ public class ApiServer {
             Double capObj = budgets.get(key);
             double used = usedObj == null ? 0 : usedObj.doubleValue();
             double cap = capObj == null ? 0 : capObj.doubleValue();
+            boolean isExceeded = cap > 0 && used > cap;
+            boolean isWarning = cap > 0 && !isExceeded && used >= 0.8 * cap;
+            double remaining = Math.max(0, cap - used);
+            double overBy = Math.max(0, used - cap);
+            double percent = cap > 0 ? (used * 100.0) / cap : 0.0;
+
             json.append("{\"name\":").append(Json.q(key))
+                    .append(",\"category\":").append(Json.q(key))
                     .append(",\"used\":").append(used)
+                    .append(",\"spent\":").append(used)
                     .append(",\"budget\":").append(cap)
+                    .append(",\"remaining\":").append(remaining)
+                    .append(",\"overBy\":").append(overBy)
+                    .append(",\"percent\":").append(Math.round(percent * 10.0) / 10.0)
+                    .append(",\"isExceeded\":").append(isExceeded)
+                    .append(",\"isWarning\":").append(isWarning)
                     .append('}');
         }
         json.append("]}");

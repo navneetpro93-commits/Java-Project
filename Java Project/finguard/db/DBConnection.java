@@ -22,7 +22,7 @@ public class DBConnection {
     private static String driver = "com.mysql.cj.jdbc.Driver";
     private static String url = "jdbc:mysql://localhost:3306/finguard_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
     private static String user = "root";
-    private static String password = "";
+    private static String password = "navneet18";
 
     private static boolean driverLoaded = false;
     private static boolean connected = false;
@@ -149,6 +149,14 @@ public class DBConnection {
                     + "progress DOUBLE DEFAULT 0.0,"
                     + "weeks_data VARCHAR(255) DEFAULT '0,0,0,0,0,0,0,0',"
                     + "FOREIGN KEY (account_number) REFERENCES accounts(account_number) ON DELETE CASCADE)");
+
+            stmt.executeUpdate("CREATE TABLE IF NOT EXISTS customer_budgets ("
+                    + "customer_id VARCHAR(10) NOT NULL,"
+                    + "category VARCHAR(50) NOT NULL,"
+                    + "amount DOUBLE NOT NULL,"
+                    + "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,"
+                    + "PRIMARY KEY (customer_id, category),"
+                    + "FOREIGN KEY (customer_id) REFERENCES customers(customer_id) ON DELETE CASCADE)");
 
             stmt.close();
             conn.close();

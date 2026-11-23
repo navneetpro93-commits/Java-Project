@@ -19,8 +19,10 @@ import {
   Check,
   Zap,
   TrendingUp,
-  AlertCircle
+  AlertCircle,
+  AlertTriangle
 } from 'lucide-react';
+import { api } from '../services/api';
 import { useLanguage } from '../context/LanguageContext';
 
 export default function Dashboard({
@@ -30,9 +32,11 @@ export default function Dashboard({
   onOpenFreezeModal,
   onOpenCreateAccountModal,
   onSelectAccountForStatement,
+  onNavigateToSpending,
 }) {
   const { t } = useLanguage();
   const [showBalanceMap, setShowBalanceMap] = useState({});
+  const [spendingInfo, setSpendingInfo] = useState(null);
 
   const toggleShowBalance = (accNum) => {
     setShowBalanceMap(prev => ({ ...prev, [accNum]: !prev[accNum] }));
@@ -47,8 +51,41 @@ export default function Dashboard({
   const frozenCount = customerAccounts.filter(a => a.frozen).length;
   const cooldownCount = overview?.cooldown?.length || 0;
 
+  React.useEffect(() => {
+    if (customerAccounts.length > 0) {
+      api.getSpending(customerAccounts[0].number)
+        .then(data => setSpendingInfo(data))
+        .catch(() => {});
+    }
+  }, [customerAccounts.length, overview?.tick]);
+
   return (
     <div className="space-y-6">
+
+      {/* Monthly Budget Exceeded Alert Banner (Global Attention Notification) */}
+      {spendingInfo?.hasExceeded && (
+        <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-500/10 border-2 border-rose-300 dark:border-rose-500/40 text-rose-900 dark:text-rose-100 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-lg animate-pulse">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-rose-600 text-white flex-shrink-0">
+              <AlertTriangle className="h-5 w-5 stroke-[2.5]" />
+            </div>
+            <div>
+              <span className="font-extrabold uppercase text-xs">⚠️ Monthly Budget Exceeded Alert: </span>
+              <span className="text-rose-800 dark:text-rose-200">
+                You have exceeded your monthly budget for <strong>{spendingInfo.exceededCategories}</strong>!
+              </span>
+            </div>
+          </div>
+          {onNavigateToSpending && (
+            <button
+              onClick={onNavigateToSpending}
+              className="px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-md transition whitespace-nowrap cursor-pointer flex-shrink-0"
+            >
+              Review & Manage Budgets →
+            </button>
+          )}
+        </div>
+      )}
       
       {/* Top Banner & Customer Context */}
       <div className="flex flex-col md:flex-row md:items-center justify-between p-6 rounded-3xl bg-white dark:bg-gradient-to-r dark:from-slate-900 dark:via-indigo-950/40 dark:to-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl gap-4 transition-colors">

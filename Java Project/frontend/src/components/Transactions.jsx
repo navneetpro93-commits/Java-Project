@@ -7,12 +7,16 @@ import {
   Zap, 
   FileText, 
   AlertCircle, 
-  CheckCircle2, 
+  AlertTriangle,
+  Check, 
   Clock, 
-  ShieldAlert, 
-  Terminal, 
-  Sparkles, 
-  ShieldCheck 
+  ShieldCheck, 
+  Sparkles,
+  CreditCard,
+  User,
+  PlusCircle,
+  Receipt,
+  ArrowRight
 } from 'lucide-react';
 import { api } from '../services/api';
 import { useLanguage } from '../context/LanguageContext';
@@ -56,14 +60,15 @@ export default function Transactions({
     setError(null);
   };
 
-  const presetAmounts = [500, 2000, 10000, 30000, 75000];
+  const presetAmounts = [500, 2000, 5000, 10000, 30000];
   const quickPurposes = [
     'Grocery & Food',
+    'Online Shopping',
+    'Uber Travel',
     'Electricity Bill',
     'UPI Snacks',
     'Rent payment',
-    'Healthcare',
-    'Online Shopping'
+    'Entertainment Movie'
   ];
 
   const handleSubmit = async (e) => {
@@ -78,29 +83,239 @@ export default function Transactions({
     setResult(null);
 
     try {
-      const response = await api.move({
+      const res = await api.move({
         type,
-        fromAccount: type === 'DEPOSIT' || type === 'SALARY' ? '' : fromAccount,
-        toAccount: type === 'WITHDRAW' ? '' : (type === 'DEPOSIT' || type === 'SALARY' ? fromAccount : toAccount),
+        fromAccount: (type === 'DEPOSIT' || type === 'SALARY') ? '' : fromAccount,
+        toAccount: (type === 'WITHDRAW') ? '' : (type === 'DEPOSIT' ? fromAccount : toAccount),
         amount: Number(amount),
-        purpose: purpose || 'General Banking',
+        purpose: purpose || `${type} Payment`
       });
 
-      setResult(response);
-      if (onSuccess) onSuccess();
+      setResult({
+        ...res,
+        paidAmount: Number(amount),
+        paidTo: (type === 'WITHDRAW') ? 'Self / ATM Cash' : (type === 'DEPOSIT' ? fromAccount : (toAccount || 'Recipient')),
+        paidFrom: (type === 'DEPOSIT' || type === 'SALARY') ? 'Direct Deposit Desk' : fromAccount,
+        purposeUsed: purpose || `${type} Payment`,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        dateStr: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
+        refId: 'FG' + Math.floor(1000000000 + Math.random() * 9000000000)
+      });
+
+      if (res.ok && onSuccess) {
+        onSuccess();
+      }
     } catch (err) {
-      setError(err.message || 'Transaction could not be completed');
+      setError(err.message || 'Transaction submission failed');
     } finally {
       setLoading(false);
     }
   };
 
-  const selectedFromObj = accounts.find(a => a.number === fromAccount);
-  const isHighValue = Number(amount) >= 25000;
-  const isFrozen = selectedFromObj?.frozen;
+  // Reset to make a new payment (re-shows Transfer & Pay form)
+  const handleMakeNewPayment = () => {
+    setResult(null);
+    setAmount('');
+    setError(null);
+  };
 
+  const isHighValue = Number(amount) >= 25000;
+  const currentFromAccObj = accounts.find(a => a.number === fromAccount);
+  const isFrozen = currentFromAccObj?.frozen;
+
+  const typeTabs = [
+    { id: 'TRANSFER', label: t('typeTransfer'), icon: ArrowLeftRight },
+    { id: 'BILL', label: t('typeBill'), icon: FileText },
+    { id: 'SALARY', label: t('typeSalary'), icon: Zap },
+    { id: 'DEPOSIT', label: t('typeDeposit'), icon: ArrowDownLeft },
+    { id: 'WITHDRAW', label: t('typeWithdraw'), icon: ArrowUpRight },
+  ];
+
+  const isSuccess = result?.message?.startsWith('SUCCESS');
+  const isHeld = result?.message?.startsWith('HELD');
+
+  // =========================================================================
+  // VIEW 1: FULL-PAGE GPAY SUCCESS SCREEN (Transfer & Pay form disappears)
+  // =========================================================================
+  if (result) {
+    return (
+      <div className="max-w-xl mx-auto py-4 sm:py-8 px-4 animate-fade-in font-sans">
+        
+        {/* SUCCESS STATE WITH ICONIC GREEN TICK */}
+        {isSuccess && (
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-10 shadow-2xl text-center relative overflow-hidden transition-colors">
+            
+            {/* Top ambient glow */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none" />
+
+            {/* Google Pay Animated Circular Green Tick */}
+            <div className="relative mx-auto my-4 flex items-center justify-center">
+              <div className="w-24 h-24 rounded-full bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center animate-pulse">
+                <div className="w-18 h-18 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-2xl shadow-emerald-500/50">
+                  <Check className="h-10 w-10 stroke-[3.5]" />
+                </div>
+              </div>
+            </div>
+
+            {/* Headline */}
+            <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight mt-2">
+              Payment Successful
+            </h2>
+
+            {/* Big Bold Rupee Amount */}
+            <div className="text-4xl sm:text-5xl font-black font-mono text-slate-900 dark:text-white tracking-tight mt-3">
+              ₹{Number(result.paidAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+            </div>
+
+            {/* Paid to Recipient */}
+            <p className="text-sm text-slate-600 dark:text-slate-400 mt-2 font-medium">
+              Paid to <span className="font-extrabold text-slate-900 dark:text-white">{result.paidTo}</span>
+            </p>
+
+            {/* Google Pay Style Digital Receipt Slip */}
+            <div className="mt-8 p-5 rounded-2xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200/80 dark:border-slate-800/80 text-left text-xs space-y-3 font-sans">
+              <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
+                <span>Transaction Ref ID</span>
+                <span className="font-mono font-bold text-slate-800 dark:text-slate-200">{result.refId}</span>
+              </div>
+              <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
+                <span>Transfer Channel</span>
+                <span className="font-semibold text-emerald-600 dark:text-emerald-400">Instant UPI / IMPS</span>
+              </div>
+              <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
+                <span>Debited Account</span>
+                <span className="font-mono text-slate-800 dark:text-slate-200">{result.paidFrom}</span>
+              </div>
+              <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
+                <span>Payment Category</span>
+                <span className="font-medium text-slate-800 dark:text-slate-200">{result.purposeUsed}</span>
+              </div>
+              <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-200 dark:border-slate-800">
+                <span>Date & Time</span>
+                <span className="font-mono text-slate-800 dark:text-slate-200">{result.dateStr} at {result.timestamp}</span>
+              </div>
+            </div>
+
+            {/* BUDGET ALERT NOTIFICATION (If category budget was exceeded or reached warning) */}
+            {result.budgetAlert && (
+              <div className={`mt-6 p-4 rounded-2xl border text-left flex items-start gap-3.5 shadow-md ${
+                result.budgetAlert.exceeded 
+                  ? 'bg-rose-50 dark:bg-rose-500/15 border-rose-300 dark:border-rose-500/40 text-rose-900 dark:text-rose-100 animate-pulse'
+                  : 'bg-amber-50 dark:bg-amber-500/15 border-amber-300 dark:border-amber-500/40 text-amber-900 dark:text-amber-100'
+              }`}>
+                <div className={`p-2 rounded-xl flex-shrink-0 mt-0.5 ${
+                  result.budgetAlert.exceeded ? 'bg-rose-600 text-white' : 'bg-amber-500 text-white'
+                }`}>
+                  <AlertTriangle className="h-5 w-5 stroke-[2.5]" />
+                </div>
+                <div className="text-xs space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-black text-sm uppercase tracking-tight">
+                      {result.budgetAlert.exceeded ? '⚠️ Monthly Budget Exceeded Alert!' : '⚠️ Budget Threshold Warning'}
+                    </span>
+                    <span className="font-mono text-[10px] px-2 py-0.5 rounded-full bg-white/70 dark:bg-slate-900/60 font-bold">
+                      {result.budgetAlert.category}
+                    </span>
+                  </div>
+                  <p className="leading-relaxed">
+                    {result.budgetAlert.exceeded ? (
+                      <>
+                        This transaction pushed your total <strong>{result.budgetAlert.category}</strong> spending to{' '}
+                        <strong>₹{Number(result.budgetAlert.spent).toLocaleString('en-IN')}</strong>, exceeding your monthly budget limit of{' '}
+                        <strong>₹{Number(result.budgetAlert.budget).toLocaleString('en-IN')}</strong> by{' '}
+                        <strong className="text-rose-600 dark:text-rose-400 font-black">
+                          ₹{Number(result.budgetAlert.overBy).toLocaleString('en-IN')}
+                        </strong>!
+                      </>
+                    ) : (
+                      <>
+                        You have used <strong>{result.budgetAlert.percent}%</strong> of your monthly{' '}
+                        <strong>{result.budgetAlert.category}</strong> budget (Spent: ₹{Number(result.budgetAlert.spent).toLocaleString('en-IN')} / ₹{Number(result.budgetAlert.budget).toLocaleString('en-IN')}).
+                      </>
+                    )}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* PRIMARY BUTTON: MAKE NEW PAYMENT */}
+            <div className="mt-8 space-y-3">
+              <button
+                onClick={handleMakeNewPayment}
+                className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-slate-950 font-extrabold text-xs uppercase tracking-wider transition shadow-xl shadow-cyan-500/25 flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <PlusCircle className="h-4 w-4" />
+                <span>{t('makeNewPayment')}</span>
+              </button>
+            </div>
+
+            {/* Verified Trust Stamp */}
+            <div className="mt-5 flex items-center justify-center gap-2 text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
+              <ShieldCheck className="h-4 w-4" />
+              <span>Verified Banking Core Settlement</span>
+            </div>
+
+          </div>
+        )}
+
+        {/* HELD STATE (Safety Vault Quarantine) */}
+        {isHeld && (
+          <div className="bg-white dark:bg-slate-900 border border-amber-200 dark:border-amber-500/30 rounded-3xl p-6 sm:p-10 shadow-2xl text-center relative overflow-hidden transition-colors">
+            <div className="w-20 h-20 mx-auto rounded-full bg-amber-100 dark:bg-amber-500/20 text-amber-500 flex items-center justify-center mb-4">
+              <Clock className="h-10 w-10 animate-pulse" />
+            </div>
+            <h2 className="text-2xl font-black text-slate-900 dark:text-white">
+              Placed in Safety Hold
+            </h2>
+            <div className="text-4xl font-black font-mono text-amber-600 dark:text-amber-400 mt-2">
+              ₹{Number(result.paidAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-3 max-w-sm mx-auto leading-relaxed">
+              High-value transfer securely quarantined in the Cooldown Vault. You can recall this anytime before release.
+            </p>
+            <div className="mt-8">
+              <button
+                onClick={handleMakeNewPayment}
+                className="w-full py-4 px-6 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs uppercase tracking-wider transition shadow-lg cursor-pointer"
+              >
+                {t('makeNewPayment')}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* DECLINED STATE */}
+        {!isSuccess && !isHeld && (
+          <div className="bg-white dark:bg-slate-900 border border-rose-200 dark:border-rose-500/30 rounded-3xl p-6 sm:p-10 shadow-2xl text-center relative overflow-hidden transition-colors">
+            <div className="w-20 h-20 mx-auto rounded-full bg-rose-100 dark:bg-rose-500/20 text-rose-500 flex items-center justify-center mb-4">
+              <AlertCircle className="h-10 w-10" />
+            </div>
+            <h2 className="text-2xl font-black text-slate-900 dark:text-white">
+              Payment Declined
+            </h2>
+            <p className="text-xs text-rose-600 dark:text-rose-400 mt-3 max-w-sm mx-auto font-medium leading-relaxed">
+              {result.message}
+            </p>
+            <div className="mt-8">
+              <button
+                onClick={handleMakeNewPayment}
+                className="w-full py-4 px-6 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:text-slate-950 font-bold text-xs uppercase tracking-wider transition shadow-lg cursor-pointer"
+              >
+                Try Again
+              </button>
+            </div>
+          </div>
+        )}
+
+      </div>
+    );
+  }
+
+  // =========================================================================
+  // VIEW 2: NORMAL TRANSFER & PAY FORM (Visible before sending payment)
+  // =========================================================================
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-5xl mx-auto space-y-6">
       
       {/* Header */}
       <div>
@@ -113,153 +328,138 @@ export default function Transactions({
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
-        {/* Main Form (7 cols) */}
-        <div className="lg:col-span-7 bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xl transition-colors">
+        {/* Left: Transfer Form (7 cols) */}
+        <div className="lg:col-span-7 bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl transition-colors">
           
-          {/* Operation Type Selector */}
-          <div className="flex flex-wrap gap-2 mb-6">
-            {[
-              { id: 'TRANSFER', label: 'Transfer', icon: ArrowLeftRight },
-              { id: 'DEPOSIT', label: 'Deposit', icon: ArrowDownLeft },
-              { id: 'WITHDRAW', label: 'Withdraw', icon: ArrowUpRight },
-              { id: 'SALARY', label: 'Salary', icon: Zap },
-              { id: 'BILL', label: 'Bill Pay', icon: FileText },
-            ].map((item) => {
-              const Icon = item.icon;
-              const active = type === item.id;
+          {/* Action Tabs */}
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5 p-1 rounded-2xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 mb-5">
+            {typeTabs.map(tab => {
+              const Icon = tab.icon;
+              const active = type === tab.id;
               return (
                 <button
-                  key={item.id}
+                  key={tab.id}
                   type="button"
-                  onClick={() => handleTypeChange(item.id)}
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition ${
+                  onClick={() => handleTypeChange(tab.id)}
+                  className={`flex flex-col sm:flex-row items-center justify-center gap-1.5 py-2 px-1 rounded-xl text-xs font-bold transition cursor-pointer ${
                     active
-                      ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/20'
-                      : 'bg-slate-100 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800'
+                      ? 'bg-white dark:bg-slate-800 text-cyan-600 dark:text-cyan-400 shadow-md border border-slate-200 dark:border-slate-700'
+                      : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
                   }`}
                 >
                   <Icon className="h-3.5 w-3.5" />
-                  {item.label}
+                  <span className="text-[11px] truncate">{tab.label}</span>
                 </button>
               );
             })}
           </div>
 
+          {/* Account Locked Warning */}
+          {isFrozen && type !== 'DEPOSIT' && (
+            <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/30 text-rose-700 dark:text-rose-300 text-xs mb-4 flex items-center gap-2">
+              <AlertCircle className="h-4 w-4 text-rose-500 flex-shrink-0" />
+              <span>This account is currently locked. Debits and transfers are blocked until unlocked.</span>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4">
             
-            {/* Account Selector(s) */}
-            {(type === 'TRANSFER' || type === 'WITHDRAW' || type === 'BILL') && (
+            {/* Sender / From Account */}
+            {type !== 'SALARY' && (
               <div>
-                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                  {t('debitAccount')}
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  {type === 'DEPOSIT' ? t('creditAccount') : t('debitAccount')}
                 </label>
                 <select
                   value={fromAccount}
                   onChange={(e) => setFromAccount(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-cyan-500 font-mono"
+                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white font-mono focus:outline-none focus:ring-1 focus:ring-cyan-500"
                 >
-                  {accounts.map(acc => (
-                    <option key={acc.number} value={acc.number}>
-                      {acc.number} - {acc.holder} ({acc.type}) [Bal: ₹{acc.balance.toLocaleString('en-IN')}] {acc.frozen ? '⛔ LOCKED' : ''}
-                    </option>
-                  ))}
-                </select>
-                {isFrozen && (
-                  <p className="text-[11px] text-rose-500 mt-1 flex items-center gap-1">
-                    <ShieldAlert className="h-3.5 w-3.5" />
-                    Account is locked. Unlock it in Overview to authorize debits.
-                  </p>
-                )}
-              </div>
-            )}
-
-            {(type === 'DEPOSIT' || type === 'SALARY') && (
-              <div>
-                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                  {t('creditAccount')}
-                </label>
-                <select
-                  value={fromAccount}
-                  onChange={(e) => setFromAccount(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-cyan-500 font-mono"
-                >
-                  {accounts.map(acc => (
-                    <option key={acc.number} value={acc.number}>
-                      {acc.number} - {acc.holder} ({acc.type}) [Bal: ₹{acc.balance.toLocaleString('en-IN')}]
+                  {senderAccounts.map((a) => (
+                    <option key={a.number} value={a.number}>
+                      {a.number} - {a.holder} (Bal: ₹{a.balance.toLocaleString('en-IN')}) {a.frozen ? '🔒 [LOCKED]' : ''}
                     </option>
                   ))}
                 </select>
               </div>
             )}
 
-            {type === 'TRANSFER' && (
+            {/* Recipient / Beneficiary Account */}
+            {(type === 'TRANSFER' || type === 'BILL' || type === 'SALARY') && (
               <div>
-                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                   {t('beneficiaryAccount')}
                 </label>
-                <select
-                  value={toAccount}
-                  onChange={(e) => setToAccount(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-cyan-500 font-mono"
-                >
-                  <option value="">Select recipient account...</option>
-                  {accounts
-                    .filter(a => a.number !== fromAccount)
-                    .map(acc => (
-                      <option key={acc.number} value={acc.number}>
-                        {acc.number} - {acc.holder} ({acc.type})
-                      </option>
+                <div className="relative">
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. FG1002 or Beneficiary A/C"
+                    value={toAccount}
+                    onChange={(e) => setToAccount(e.target.value)}
+                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white font-mono focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                  />
+                  {/* Quick Select Beneficiaries */}
+                  <div className="flex flex-wrap gap-1.5 mt-1.5">
+                    {accounts.filter(a => a.number !== fromAccount).slice(0, 3).map((acc) => (
+                      <button
+                        key={acc.number}
+                        type="button"
+                        onClick={() => setToAccount(acc.number)}
+                        className="text-[10px] px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-cyan-600 font-mono transition cursor-pointer"
+                      >
+                        + {acc.holder} ({acc.masked})
+                      </button>
                     ))}
-                </select>
+                  </div>
+                </div>
               </div>
             )}
 
-            {/* Amount */}
+            {/* Amount & Preset Buttons */}
             <div>
-              <div className="flex justify-between items-center mb-1.5">
-                <label className="text-xs font-medium text-slate-700 dark:text-slate-300">{t('amount')} (₹)</label>
-                {selectedFromObj && (type === 'TRANSFER' || type === 'WITHDRAW' || type === 'BILL') && (
-                  <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
-                    Available: ₹{selectedFromObj.available.toLocaleString('en-IN')}
-                  </span>
-                )}
-              </div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                {t('amount')}
+              </label>
               <div className="relative">
-                <span className="absolute left-3.5 top-2.5 text-slate-400 font-bold text-sm">₹</span>
+                <span className="absolute left-3.5 top-2.5 text-slate-400 font-bold">₹</span>
                 <input
                   type="number"
-                  placeholder="0.00"
+                  required
+                  min="1"
+                  step="any"
+                  placeholder="5000"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl pl-8 pr-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 font-mono font-bold focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl pl-8 pr-3.5 py-2.5 text-xs text-slate-900 dark:text-white font-mono font-bold text-sm focus:outline-none focus:ring-1 focus:ring-cyan-500"
                 />
               </div>
 
-              {/* Preset Chips */}
+              {/* Preset Amount Pills */}
               <div className="flex flex-wrap gap-1.5 mt-2">
-                {presetAmounts.map((p) => (
+                {presetAmounts.map((preset) => (
                   <button
-                    key={p}
+                    key={preset}
                     type="button"
-                    onClick={() => setAmount(String(p))}
-                    className="text-[11px] px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition font-mono font-medium"
+                    onClick={() => setAmount(preset.toString())}
+                    className="text-[10px] font-mono px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-cyan-50 dark:hover:bg-cyan-500/10 hover:text-cyan-600 transition cursor-pointer"
                   >
-                    +₹{p >= 1000 ? `${p/1000}k` : p}
+                    +₹{preset.toLocaleString('en-IN')}
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Purpose */}
+            {/* Purpose / Note */}
             <div>
-              <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                 {t('categoryNote')}
               </label>
               <input
                 type="text"
-                placeholder="e.g. Grocery, Electricity, Bill, Rent..."
+                placeholder="e.g. Grocery, Electricity, Rent"
                 value={purpose}
                 onChange={(e) => setPurpose(e.target.value)}
                 className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-cyan-500"
@@ -270,7 +470,7 @@ export default function Transactions({
                     key={qp}
                     type="button"
                     onClick={() => setPurpose(qp)}
-                    className="text-[10px] px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800/60 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition"
+                    className="text-[10px] px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800/60 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition cursor-pointer"
                   >
                     {qp}
                   </button>
@@ -293,21 +493,21 @@ export default function Transactions({
               </div>
             )}
 
-            {/* Submit */}
+            {/* Submit Button */}
             <button
               type="submit"
               disabled={loading || isFrozen}
-              className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-slate-950 font-bold text-xs uppercase tracking-wider transition shadow-lg shadow-cyan-500/20 disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-slate-950 font-bold text-xs uppercase tracking-wider transition shadow-lg shadow-cyan-500/20 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
             >
               {loading ? (
                 <>
                   <div className="h-4 w-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
-                  {t('clearingTransaction')}
+                  <span>{t('clearingTransaction')}</span>
                 </>
               ) : (
                 <>
                   <Send className="h-4 w-4" />
-                  {t('authorize')} {type}
+                  <span>Pay Now • {type}</span>
                 </>
               )}
             </button>
@@ -315,64 +515,75 @@ export default function Transactions({
 
         </div>
 
-        {/* Live Feedback & Audit (5 cols) */}
-        <div className="lg:col-span-5 space-y-4">
-          
-          {/* Result Card */}
-          {result ? (
-            <div className={`p-6 rounded-3xl border shadow-xl ${
-              result.message.startsWith('SUCCESS')
-                ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-500/30'
-                : result.message.startsWith('HELD')
-                ? 'bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-500/30'
-                : 'bg-rose-50 dark:bg-rose-950/20 border-rose-200 dark:border-rose-500/30'
-            }`}>
-              <div className="flex items-center gap-2 mb-2">
-                {result.message.startsWith('SUCCESS') ? (
-                  <CheckCircle2 className="h-5 w-5 text-emerald-500" />
-                ) : result.message.startsWith('HELD') ? (
-                  <Clock className="h-5 w-5 text-amber-500" />
-                ) : (
-                  <AlertCircle className="h-5 w-5 text-rose-500" />
-                )}
-                <span className="font-bold text-sm text-slate-900 dark:text-white">
-                  {result.message.startsWith('SUCCESS')
-                    ? t('settledSuccess')
-                    : result.message.startsWith('HELD')
-                    ? t('placedInHold')
-                    : t('blockedByFraud')}
+        {/* Right: Payment Preview Card (5 cols) */}
+        <div className="lg:col-span-5">
+          <div className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xl space-y-5 transition-all">
+            
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-2">
+                <div className="h-8 w-8 rounded-full bg-cyan-50 dark:bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 flex items-center justify-center">
+                  <CreditCard className="h-4 w-4" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-slate-900 dark:text-white">Payment Summary</h4>
+                  <p className="text-[10px] text-slate-400">Live Transaction Preview</p>
+                </div>
+              </div>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 flex items-center gap-1">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Instant UPI Active
+              </span>
+            </div>
+
+            {/* Amount Display */}
+            <div className="text-center py-4 bg-slate-50 dark:bg-slate-950/60 rounded-2xl border border-slate-100 dark:border-slate-800/80">
+              <span className="text-[11px] text-slate-400 font-medium">Transfer Amount</span>
+              <div className="text-3xl font-black font-mono text-slate-900 dark:text-white mt-1">
+                ₹{amount ? Number(amount).toLocaleString('en-IN', { minimumFractionDigits: 2 }) : '0.00'}
+              </div>
+              <span className="text-[10px] text-slate-400 mt-1 block">Zero Transfer Fees • 100% Free</span>
+            </div>
+
+            {/* Transfer Details List */}
+            <div className="space-y-3 text-xs">
+              <div className="flex items-center justify-between text-slate-600 dark:text-slate-400">
+                <span className="flex items-center gap-1.5">
+                  <User className="h-3.5 w-3.5 text-slate-400" />
+                  Recipient
+                </span>
+                <span className="font-semibold text-slate-900 dark:text-white font-mono">
+                  {toAccount || 'Select Beneficiary'}
                 </span>
               </div>
-              <p className="text-xs text-slate-700 dark:text-slate-200 font-mono mb-2">{result.message}</p>
-            </div>
-          ) : (
-            <div className="p-6 rounded-3xl bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 text-center shadow-md">
-              <Sparkles className="h-8 w-8 text-slate-400 dark:text-slate-600 mx-auto mb-2" />
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Authorize a transaction to view instant settlement audit logs and risk evaluation scores.
-              </p>
-            </div>
-          )}
 
-          {/* Real-time System Terminal */}
-          <div className="p-5 rounded-3xl bg-slate-950 border border-slate-800 shadow-xl">
-            <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-800 text-xs">
-              <span className="text-slate-400 font-mono flex items-center gap-1.5">
-                <Terminal className="h-3.5 w-3.5 text-cyan-400" />
-                Security Network Audit Log
-              </span>
-              <span className="text-[10px] text-slate-500 font-mono">Live Telemetry</span>
+              <div className="flex items-center justify-between text-slate-600 dark:text-slate-400">
+                <span className="flex items-center gap-1.5">
+                  <CreditCard className="h-3.5 w-3.5 text-slate-400" />
+                  Pay From
+                </span>
+                <span className="font-semibold text-slate-900 dark:text-white font-mono">
+                  {fromAccount || 'Primary Account'}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between text-slate-600 dark:text-slate-400">
+                <span className="flex items-center gap-1.5">
+                  <Zap className="h-3.5 w-3.5 text-amber-500" />
+                  Settlement Speed
+                </span>
+                <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                  Real-Time (&lt; 1 sec)
+                </span>
+              </div>
             </div>
-            <pre className="text-[11px] font-mono text-emerald-400 bg-slate-950/90 p-3 rounded-xl overflow-x-auto max-h-56 scrollbar-thin whitespace-pre-wrap">
-              {result?.log || '// Transaction settlement engine active...\n// Waiting for transaction dispatch...'}
-            </pre>
+
+            {/* Security Seal */}
+            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2.5 text-[11px] text-slate-500 dark:text-slate-400">
+              <ShieldCheck className="h-4 w-4 text-cyan-500 flex-shrink-0" />
+              <span>Protected by FinGuard Bank-Grade 256-bit Encryption.</span>
+            </div>
+
           </div>
-
-          <div className="p-4 rounded-2xl bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400 flex items-center gap-2 shadow-sm">
-            <ShieldCheck className="h-4 w-4 text-cyan-500 flex-shrink-0" />
-            <span>Deadlock-free atomic transaction locking ensures zero funds inconsistency.</span>
-          </div>
-
         </div>
 
       </div>

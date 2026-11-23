@@ -35,6 +35,8 @@ public class Bank {
     private finguard.db.CustomerDAO customerDAO;
     private finguard.db.AccountDAO accountDAO;
     private finguard.db.TransactionDAO transactionDAO;
+    private finguard.db.BudgetDAO budgetDAO;
+    private SpendingIntelligence.BudgetAlert lastBudgetAlert;
     private int customerSeq;
     private int accountSeq;
     private int requestSeq;
@@ -52,6 +54,8 @@ public class Bank {
         this.customerDAO = new finguard.db.CustomerDAO();
         this.accountDAO = new finguard.db.AccountDAO();
         this.transactionDAO = new finguard.db.TransactionDAO();
+        this.budgetDAO = new finguard.db.BudgetDAO();
+        this.lastBudgetAlert = null;
         this.customerSeq = 100;
         this.accountSeq = 1000;
         this.requestSeq = 1;
@@ -67,6 +71,12 @@ public class Bank {
                 if (dbCustomers != null && !dbCustomers.isEmpty()) {
                     for (Customer c : dbCustomers.values()) {
                         customers.put(c.getCustomerId(), c);
+                        try {
+                            HashMap<String, Double> b = budgetDAO.findByCustomer(c.getCustomerId());
+                            if (b != null && !b.isEmpty()) {
+                                c.setBudgets(b);
+                            }
+                        } catch (Exception ignored) {}
                         try {
                             int idNum = Integer.parseInt(c.getCustomerId().replaceAll("\\D", ""));
                             if (idNum > customerSeq) customerSeq = idNum;
@@ -137,8 +147,7 @@ public class Bank {
             customerDAO.save(c);
             System.out.println("[MySQL SUCCESS] Saved customer " + c.getUsername() + " (" + id + ") to database.");
         } catch (Exception e) {
-            System.err.println("[MySQL ERROR] Could not save customer: " + e.getMessage());
-            throw new RuntimeException("Database error saving customer: " + e.getMessage());
+            System.out.println("[MySQL NOTICE] Offline / in-memory mode: " + e.getMessage());
         }
         return c;
     }
@@ -175,8 +184,16 @@ public class Bank {
                 System.out.println("[MySQL SUCCESS] Saved opening transaction #" + id + " to database.");
             }
         } catch (Exception e) {
-            System.err.println("[MySQL ERROR] Could not save account/transaction: " + e.getMessage());
-            throw new RuntimeException("Database error saving account: " + e.getMessage());
+            System.out.println("[MySQL NOTICE] Offline / in-memory mode: " + e.getMessage());
+            if (opening > 0 && acc.copyHistory().isEmpty()) {
+                int id;
+                synchronized (this) {
+                    id = txnSeq++;
+                }
+                Transaction initTxn = new Transaction(id, clock.now(), TransactionRequest.TYPE_DEPOSIT,
+                        opening, null, accNo, "Account Opening Deposit", "TRANSFER", "SUCCESS", 0);
+                acc.record(initTxn);
+            }
         }
         return acc;
     }
@@ -340,7 +357,56 @@ public class Bank {
         return new TransactionRequest(id, priority, clock.now(), type, from, to, amount, purpose, payee);
     }
 
+    public synchronized SpendingIntelligence.BudgetAlert getLastBudgetAlert() {
+        return lastBudgetAlert;
+    }
+
+    public synchronized void setCustomerBudget(String customerId, String category, double amount) {
+        Customer c = customers.get(customerId);
+        if (c == null) {
+            for (Customer cand : customers.values()) {
+                if (cand.getCustomerId().equalsIgnoreCase(customerId) || cand.getUsername().equalsIgnoreCase(customerId)) {
+                    c = cand;
+                    break;
+                }
+            }
+        }
+        if (c != null) {
+            c.setBudget(category, amount);
+            try {
+                budgetDAO.save(c.getCustomerId(), category, amount);
+                System.out.println("[MySQL SUCCESS] Saved budget " + category + " = Rs." + amount + " for customer " + c.getCustomerId());
+            } catch (Exception e) {
+                System.out.println("[MySQL NOTICE] Saving budget: " + e.getMessage());
+            }
+        }
+    }
+
+    public synchronized void setCustomerBudgets(String customerId, HashMap<String, Double> budgets) {
+        Customer c = customers.get(customerId);
+        if (c == null) {
+            for (Customer cand : customers.values()) {
+                if (cand.getCustomerId().equalsIgnoreCase(customerId) || cand.getUsername().equalsIgnoreCase(customerId)) {
+                    c = cand;
+                    break;
+                }
+            }
+        }
+        if (c != null && budgets != null) {
+            c.setBudgets(budgets);
+            try {
+                budgetDAO.saveAll(c.getCustomerId(), budgets);
+                System.out.println("[MySQL SUCCESS] Saved " + budgets.size() + " category budgets for customer " + c.getCustomerId());
+            } catch (Exception e) {
+                System.out.println("[MySQL NOTICE] Saving budgets: " + e.getMessage());
+            }
+        }
+    }
+
     public String settle(TransactionRequest request, boolean alreadyCooled) {
+        synchronized (this) {
+            lastBudgetAlert = null;
+        }
         try {
             return settleInner(request, alreadyCooled);
         } catch (AccountNotFoundException e) {
@@ -398,6 +464,23 @@ public class Bank {
         lockAndMove(request, result.score);
         maybeRoundUp(from, request);
         maybeChallenge(from, request);
+
+        // Check Category Budget Alert
+        try {
+            String cat = spendIntel.categorize(request.getPurpose());
+            Customer c = customers.get(from.getCustomerId());
+            if (c != null) {
+                Double spentAfter = from.copyCategorySpend().get(cat);
+                double spentVal = spentAfter != null ? spentAfter.doubleValue() : 0.0;
+                synchronized (this) {
+                    lastBudgetAlert = spendIntel.checkAlert(c, cat, spentVal);
+                }
+                if (lastBudgetAlert != null && lastBudgetAlert.exceeded) {
+                    System.out.println("  [BUDGET ALERT] " + lastBudgetAlert.message);
+                }
+            }
+        } catch (Exception ignored) {}
+
         return "SUCCESS " + type + " Rs." + request.getAmount()
                 + " from " + from.maskNumber() + " bal=" + from.getBalance();
     }

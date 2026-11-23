@@ -170,6 +170,7 @@ function MainApp() {
             onOpenFreezeModal={(acc) => setFreezeAccount(acc)}
             onOpenCreateAccountModal={() => setShowCreateModal(true)}
             onSelectAccountForStatement={handleSelectAccountForStatement}
+            onNavigateToSpending={() => setCurrentTab('spending')}
           />
         )}
 
@@ -203,6 +204,7 @@ function MainApp() {
         {currentTab === 'spending' && (
           <SpendingIntelligence
             overview={overview}
+            activeCustomer={activeCustomer}
             selectedAccount={selectedAccount}
             onSelectAccount={(acc) => setSelectedAccount(acc)}
           />

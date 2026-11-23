@@ -13,7 +13,7 @@ echo "=========================================================="
 # 1. Compile Java Backend
 echo ""
 echo "[1/3] Compiling Java Core & API Server with MySQL JDBC Driver..."
-javac -cp "lib/mysql-connector-j.jar:." -d . finguard/db/*.java finguard/api/*.java finguard/*.java finguard/*/*.java
+javac -cp "lib/mysql-connector-j.jar:." -d . finguard/*.java finguard/api/*.java finguard/concurrent/*.java finguard/db/*.java finguard/exception/*.java finguard/model/*.java finguard/safety/*.java finguard/savings/*.java finguard/service/*.java
 if [ $? -ne 0 ]; then
   echo "❌ Java compilation failed. Please fix any syntax issues."
   exit 1

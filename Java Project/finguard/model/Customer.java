@@ -25,8 +25,9 @@ public class Customer {
         this.pin = this.password;
         this.accountNumbers = new ArrayList<String>();
         this.categoryBudgets = new HashMap<String, Double>();
-        this.categoryBudgets.put("FOOD", 4000.0);
-        this.categoryBudgets.put("TRAVEL", 3000.0);
+        this.categoryBudgets.put("FOOD", 5000.0);
+        this.categoryBudgets.put("SHOPPING", 3000.0);
+        this.categoryBudgets.put("TRAVEL", 2000.0);
         this.categoryBudgets.put("BILLS", 8000.0);
         this.categoryBudgets.put("ENTERTAINMENT", 2000.0);
         this.categoryBudgets.put("ATM", 5000.0);
@@ -91,7 +92,23 @@ public class Customer {
     }
 
     public void setBudget(String category, double amount) {
-        categoryBudgets.put(category.toUpperCase(), amount);
+        if (category != null && !category.trim().isEmpty()) {
+            categoryBudgets.put(category.trim().toUpperCase(), amount);
+        }
+    }
+
+    public void setBudgets(HashMap<String, Double> newBudgets) {
+        if (newBudgets != null) {
+            for (java.util.Map.Entry<String, Double> e : newBudgets.entrySet()) {
+                setBudget(e.getKey(), e.getValue());
+            }
+        }
+    }
+
+    public double getBudget(String category) {
+        if (category == null) return 0.0;
+        Double val = categoryBudgets.get(category.trim().toUpperCase());
+        return val != null ? val.doubleValue() : 0.0;
     }
 
     public String getPersonality() {

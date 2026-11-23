@@ -7,6 +7,7 @@ import {
   Zap, 
   FileText, 
   AlertCircle, 
+  AlertTriangle,
   Check, 
   Clock, 
   ShieldCheck, 
@@ -59,14 +60,15 @@ export default function Transactions({
     setError(null);
   };
 
-  const presetAmounts = [500, 2000, 10000, 30000, 75000];
+  const presetAmounts = [500, 2000, 5000, 10000, 30000];
   const quickPurposes = [
     'Grocery & Food',
+    'Online Shopping',
+    'Uber Travel',
     'Electricity Bill',
     'UPI Snacks',
     'Rent payment',
-    'Healthcare',
-    'Online Shopping'
+    'Entertainment Movie'
   ];
 
   const handleSubmit = async (e) => {
@@ -193,6 +195,48 @@ export default function Transactions({
                 <span className="font-mono text-slate-800 dark:text-slate-200">{result.dateStr} at {result.timestamp}</span>
               </div>
             </div>
+
+            {/* BUDGET ALERT NOTIFICATION (If category budget was exceeded or reached warning) */}
+            {result.budgetAlert && (
+              <div className={`mt-6 p-4 rounded-2xl border text-left flex items-start gap-3.5 shadow-md ${
+                result.budgetAlert.exceeded 
+                  ? 'bg-rose-50 dark:bg-rose-500/15 border-rose-300 dark:border-rose-500/40 text-rose-900 dark:text-rose-100 animate-pulse'
+                  : 'bg-amber-50 dark:bg-amber-500/15 border-amber-300 dark:border-amber-500/40 text-amber-900 dark:text-amber-100'
+              }`}>
+                <div className={`p-2 rounded-xl flex-shrink-0 mt-0.5 ${
+                  result.budgetAlert.exceeded ? 'bg-rose-600 text-white' : 'bg-amber-500 text-white'
+                }`}>
+                  <AlertTriangle className="h-5 w-5 stroke-[2.5]" />
+                </div>
+                <div className="text-xs space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-black text-sm uppercase tracking-tight">
+                      {result.budgetAlert.exceeded ? '⚠️ Monthly Budget Exceeded Alert!' : '⚠️ Budget Threshold Warning'}
+                    </span>
+                    <span className="font-mono text-[10px] px-2 py-0.5 rounded-full bg-white/70 dark:bg-slate-900/60 font-bold">
+                      {result.budgetAlert.category}
+                    </span>
+                  </div>
+                  <p className="leading-relaxed">
+                    {result.budgetAlert.exceeded ? (
+                      <>
+                        This transaction pushed your total <strong>{result.budgetAlert.category}</strong> spending to{' '}
+                        <strong>₹{Number(result.budgetAlert.spent).toLocaleString('en-IN')}</strong>, exceeding your monthly budget limit of{' '}
+                        <strong>₹{Number(result.budgetAlert.budget).toLocaleString('en-IN')}</strong> by{' '}
+                        <strong className="text-rose-600 dark:text-rose-400 font-black">
+                          ₹{Number(result.budgetAlert.overBy).toLocaleString('en-IN')}
+                        </strong>!
+                      </>
+                    ) : (
+                      <>
+                        You have used <strong>{result.budgetAlert.percent}%</strong> of your monthly{' '}
+                        <strong>{result.budgetAlert.category}</strong> budget (Spent: ₹{Number(result.budgetAlert.spent).toLocaleString('en-IN')} / ₹{Number(result.budgetAlert.budget).toLocaleString('en-IN')}).
+                      </>
+                    )}
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* PRIMARY BUTTON: MAKE NEW PAYMENT */}
             <div className="mt-8 space-y-3">

@@ -150,6 +150,14 @@ public class DBConnection {
                     + "weeks_data VARCHAR(255) DEFAULT '0,0,0,0,0,0,0,0',"
                     + "FOREIGN KEY (account_number) REFERENCES accounts(account_number) ON DELETE CASCADE)");
 
+            stmt.executeUpdate("CREATE TABLE IF NOT EXISTS customer_budgets ("
+                    + "customer_id VARCHAR(10) NOT NULL,"
+                    + "category VARCHAR(50) NOT NULL,"
+                    + "amount DOUBLE NOT NULL,"
+                    + "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,"
+                    + "PRIMARY KEY (customer_id, category),"
+                    + "FOREIGN KEY (customer_id) REFERENCES customers(customer_id) ON DELETE CASCADE)");
+
             stmt.close();
             conn.close();
             connected = true;

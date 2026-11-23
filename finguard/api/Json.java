@@ -1,5 +1,7 @@
 package finguard.api;
 
+import java.util.HashMap;
+
 public class Json {
     public static String esc(String value) {
         if (value == null) {
@@ -79,6 +81,36 @@ public class Json {
         if (raw.length() == 0) {
             return 0;
         }
-        return Double.parseDouble(raw);
+        try {
+            return Double.parseDouble(raw);
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
+    public static HashMap<String, Double> parseDoubleMap(String json, String parentKey) {
+        HashMap<String, Double> map = new HashMap<String, Double>();
+        if (json == null) return map;
+        int keyIndex = json.indexOf("\"" + parentKey + "\"");
+        if (keyIndex < 0) return map;
+        int openBrace = json.indexOf('{', keyIndex);
+        if (openBrace < 0) return map;
+        int closeBrace = json.indexOf('}', openBrace);
+        if (closeBrace < 0) return map;
+        String content = json.substring(openBrace + 1, closeBrace);
+        String[] pairs = content.split(",");
+        for (String pair : pairs) {
+            int colon = pair.indexOf(':');
+            if (colon > 0) {
+                String k = pair.substring(0, colon).replaceAll("[\"\\s]", "");
+                String v = pair.substring(colon + 1).replaceAll("[\"\\s]", "");
+                try {
+                    if (!k.isEmpty() && !v.isEmpty()) {
+                        map.put(k.toUpperCase(), Double.parseDouble(v));
+                    }
+                } catch (NumberFormatException ignored) {}
+            }
+        }
+        return map;
     }
 }

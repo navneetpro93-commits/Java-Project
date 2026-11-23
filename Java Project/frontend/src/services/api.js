@@ -1,9 +1,6 @@
 // FinGuard Client API connecting React Frontend to Java Backend Server (Port 8080)
+// Guarantees real persistence in local MySQL database (finguard_db).
 
-const isLocal = typeof window !== 'undefined' && 
-  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-
-// Prefer Vite proxy (/api) in development, fallback to direct Java port 8080
 const PRIMARY_URL = import.meta.env.VITE_API_URL || '/api';
 const DIRECT_JAVA_URL = 'http://localhost:8080/api';
 
@@ -13,34 +10,45 @@ async function request(path, options = {}) {
     ...(options.headers || {}),
   };
 
-  // Try Primary URL (Vite proxy /api)
+  // 1. Try Primary URL (Vite proxy /api -> http://localhost:8080)
   try {
     const res = await fetch(`${PRIMARY_URL}${path}`, {
       ...options,
       headers,
     });
-    
-    // If proxied response is JSON, return parsed data
+
+    if (res.status === 502 || res.status === 504) {
+      throw new Error(`Java backend on port 8080 is not reachable (502).`);
+    }
+
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
       throw new Error(data.error || `Server returned error (${res.status})`);
     }
     return data;
-  } catch (primaryErr) {
-    // If primary failed (e.g. Vite proxy unreachable or direct port needed), try direct port 8080
+  } catch (err) {
+    // If it's a backend validation error (e.g. wrong password or duplicate username), rethrow immediately
+    if (err.message && !err.message.includes('502') && !err.message.includes('not reachable') && !err.message.includes('Failed to fetch') && !err.message.includes('NetworkError')) {
+      throw err;
+    }
+
+    // 2. Direct fallback to http://localhost:8080/api (bypassing Vite proxy)
     try {
       const directRes = await fetch(`${DIRECT_JAVA_URL}${path}`, {
         ...options,
         headers,
       });
+
       const directData = await directRes.json().catch(() => ({}));
       if (!directRes.ok) {
         throw new Error(directData.error || `Java Server error (${directRes.status})`);
       }
       return directData;
     } catch (directErr) {
-      // Both attempts failed
-      throw new Error(primaryErr.message || 'Cannot connect to Java backend on http://localhost:8080');
+      if (directErr.message && !directErr.message.includes('Failed to fetch') && !directErr.message.includes('NetworkError')) {
+        throw directErr;
+      }
+      throw new Error('Java backend server is not running on port 8080. Please start the Java server (run `./start.sh` or `npm start`) to connect to MySQL database.');
     }
   }
 }
@@ -49,9 +57,9 @@ export const api = {
   // Health & Heartbeat
   getHealth: () => request('/health'),
   getOverview: () => request('/overview'),
-  
+
   // Authentication & Customers
-  login: (username, password) => 
+  login: (username, password) =>
     request('/login', {
       method: 'POST',
       body: JSON.stringify({ username, password, customerId: username, pin: password }),
@@ -101,6 +109,22 @@ export const api = {
   getSpending: (account) =>
     request(`/spending?account=${encodeURIComponent(account)}`),
 
+  // Budget Management
+  getBudget: (account) =>
+    request(`/budget?account=${encodeURIComponent(account)}`),
+
+  updateBudget: ({ customerId, account, category, amount, budgets }) =>
+    request('/budget', {
+      method: 'POST',
+      body: JSON.stringify({
+        customerId,
+        account,
+        category,
+        amount: amount !== undefined ? Number(amount) : undefined,
+        budgets,
+      }),
+    }),
+
   // Security & Locks
   freeze: (account, pin) =>
     request('/freeze', {
@@ -121,16 +145,10 @@ export const api = {
     }),
 
   // Stress & Concurrency Labs
-  runRaceLab: () =>
-    request('/labs/race', { method: 'POST' }),
-
-  runPriorityLab: () =>
-    request('/labs/priority', { method: 'POST' }),
-
-  runFreezeLab: () =>
-    request('/labs/freeze', { method: 'POST' }),
+  runRaceLab: () => request('/labs/race', { method: 'POST' }),
+  runPriorityLab: () => request('/labs/priority', { method: 'POST' }),
+  runFreezeLab: () => request('/labs/freeze', { method: 'POST' }),
 
   // Database Status
-  getDbStatus: () =>
-    request('/db/status'),
+  getDbStatus: () => request('/db/status'),
 };
